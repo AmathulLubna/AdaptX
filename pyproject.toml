@@ -1,0 +1,36 @@
+[project]
+name = "adaptx"
+version = "1.0.0"
+description = "Autonomous diagnosis and multi-objective evolutionary repair of failing ML models"
+requires-python = ">=3.8"
+dependencies = ["numpy>=1.21", "scipy>=1.7", "scikit-learn>=0.24"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I import order, B bugbear, C4 comprehensions,
+# UP pyupgrade, ARG unused arguments, SIM simplification, D docstrings.
+select = ["E", "W", "F", "I", "B", "C4", "SIM", "ARG", "D"]
+ignore = [
+    "D203",  # conflicts with D211 (blank line before class docstring)
+    "D213",  # conflicts with D212 (multi-line summary position)
+    "E501",  # long lines are caught by line-length above
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests document themselves through their names and module docstrings.
+"tests/*" = ["D103", "ARG001"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    # Iteration caps are a deliberate compute budget, not a defect.
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]

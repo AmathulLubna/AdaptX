@@ -1,0 +1,822 @@
+{
+  "system": "AdaptX",
+  "team_id": "unset",
+  "config": {
+    "seed": 20260930,
+    "pop_size": 16,
+    "generations": 4,
+    "validation_levels": [
+      0.8,
+      1.0,
+      1.2
+    ],
+    "hidden_test_levels": [
+      0.6,
+      1.0,
+      1.5,
+      2.0
+    ],
+    "max_patch_fraction": 0.25,
+    "param_budget_ratio": 1.5,
+    "min_accuracy_gain": 0.01
+  },
+  "summary": {
+    "diagnosis_accuracy": 1.0,
+    "mean_ood_recovery": 0.7815,
+    "mean_accuracy_before": 0.6749,
+    "mean_accuracy_after": 0.7316,
+    "mean_intervention_size": 0.1869,
+    "mean_stability": 0.8816,
+    "mean_parameter_ratio": 0.8143,
+    "n_repaired": 5,
+    "n_cases": 6,
+    "fitness": 0.8777
+  },
+  "runtime_seconds": 81.211,
+  "cases": [
+    {
+      "scenario": "env_shift",
+      "failure_detected": true,
+      "detection": {
+        "failure_detected": true,
+        "reason": "ood_accuracy_drop_exceeds_sampling_noise",
+        "train_accuracy": 0.89,
+        "val_accuracy": 0.7875,
+        "ood_accuracy": 0.6792,
+        "ood_balanced_accuracy": 0.6697,
+        "accuracy_drop": 0.1083,
+        "balanced_accuracy_drop": 0.0995,
+        "noise_threshold": 0.049,
+        "generalization_gap": 0.1025,
+        "calibration_error": 0.2619,
+        "fairness_gap": 0.0417,
+        "stability": 0.8308,
+        "per_level_accuracy": {
+          "0.8": 0.75,
+          "1.0": 0.655,
+          "1.2": 0.6325
+        }
+      },
+      "diagnosis": {
+        "confidences": {
+          "environment_shift": 0.9266,
+          "feature_instability": 0.0194,
+          "input_corruption": 0.2388,
+          "class_imbalance": 0.0046,
+          "overfitting": 0.0084
+        },
+        "evidence": {
+          "mean_feature_divergence": 1.3551,
+          "divergence_concentration": 0.0072,
+          "missing_rate": 0.0,
+          "outlier_rate": 0.0124,
+          "heavy_tail_rate": 0.0,
+          "variance_inflation": 0.2047,
+          "label_prior_shift": 0.0117,
+          "generalization_gap": 0.1025,
+          "max_feature_divergence": 1.4126
+        },
+        "primary": "environment_shift"
+      },
+      "selected_repair": "PatchML",
+      "families_considered": [
+        "PatchML"
+      ],
+      "performance_before": 0.6075,
+      "performance_after": 0.7419,
+      "performance_reference": 0.7712,
+      "ood_recovery": 0.8206,
+      "beat_reference": false,
+      "per_level_before": {
+        "0.6": 0.78,
+        "1.0": 0.655,
+        "1.5": 0.5125,
+        "2.0": 0.4825
+      },
+      "per_level_after": {
+        "0.6": 0.785,
+        "1.0": 0.78,
+        "1.5": 0.685,
+        "2.0": 0.7175
+      },
+      "n_evaluations": 80,
+      "convergence_log": [
+        {
+          "generation": 1,
+          "front_size": 10,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.798996,
+            0.006667,
+            0.002731,
+            1.0,
+            0.007238
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 32
+        },
+        {
+          "generation": 2,
+          "front_size": 12,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.798996,
+            0.006667,
+            0.002731,
+            1.0,
+            0.007238
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 48
+        },
+        {
+          "generation": 3,
+          "front_size": 16,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.799604,
+            0.006667,
+            0.002731,
+            1.0,
+            0.007238
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 64
+        },
+        {
+          "generation": 4,
+          "front_size": 16,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.799604,
+            0.006667,
+            0.002731,
+            1.0,
+            0.007238
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 80
+        }
+      ],
+      "ground_truth_cause": "environment_shift",
+      "diagnosis_correct": true,
+      "repair_parameters": {
+        "repair": "PatchML",
+        "patch_size": 29,
+        "pool_size": 1200,
+        "shortlist_size": 192
+      },
+      "intervention_size": 0.02417,
+      "parameter_ratio": 1.0,
+      "training_cost_gflops": 0.00295,
+      "stability": 0.9635,
+      "fairness_gap": 0.0026
+    },
+    {
+      "scenario": "feature_shift",
+      "failure_detected": true,
+      "detection": {
+        "failure_detected": true,
+        "reason": "ood_accuracy_drop_exceeds_sampling_noise",
+        "train_accuracy": 0.9137,
+        "val_accuracy": 0.82,
+        "ood_accuracy": 0.6075,
+        "ood_balanced_accuracy": 0.5883,
+        "accuracy_drop": 0.2125,
+        "balanced_accuracy_drop": 0.205,
+        "noise_threshold": 0.0477,
+        "generalization_gap": 0.0938,
+        "calibration_error": 0.319,
+        "fairness_gap": 0.0521,
+        "stability": 0.9593,
+        "per_level_accuracy": {
+          "0.8": 0.6225,
+          "1.0": 0.6,
+          "1.2": 0.6
+        }
+      },
+      "diagnosis": {
+        "confidences": {
+          "environment_shift": 0.2148,
+          "feature_instability": 0.9088,
+          "input_corruption": 0.2582,
+          "class_imbalance": 0.1094,
+          "overfitting": 0.0587
+        },
+        "evidence": {
+          "mean_feature_divergence": 0.34,
+          "divergence_concentration": 0.8933,
+          "missing_rate": 0.0,
+          "outlier_rate": 0.0297,
+          "heavy_tail_rate": 0.0,
+          "variance_inflation": 0.224,
+          "label_prior_shift": 0.0329,
+          "generalization_gap": 0.0938,
+          "max_feature_divergence": 1.9088
+        },
+        "primary": "feature_instability"
+      },
+      "selected_repair": "FeatureReweighting",
+      "families_considered": [
+        "FeatureReweighting"
+      ],
+      "performance_before": 0.5881,
+      "performance_after": 0.7519,
+      "performance_reference": 0.7681,
+      "ood_recovery": 0.9097,
+      "beat_reference": false,
+      "per_level_before": {
+        "0.6": 0.6725,
+        "1.0": 0.6,
+        "1.5": 0.5425,
+        "2.0": 0.5375
+      },
+      "per_level_after": {
+        "0.6": 0.8025,
+        "1.0": 0.805,
+        "1.5": 0.6975,
+        "2.0": 0.7025
+      },
+      "n_evaluations": 80,
+      "convergence_log": [
+        {
+          "generation": 1,
+          "front_size": 13,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.785787,
+            0.0,
+            0.00529,
+            1.0,
+            0.005619
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 32
+        },
+        {
+          "generation": 2,
+          "front_size": 12,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.791252,
+            0.0,
+            0.00529,
+            1.0,
+            0.005619
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 48
+        },
+        {
+          "generation": 3,
+          "front_size": 11,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.791252,
+            0.0,
+            0.00529,
+            1.0,
+            0.005619
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 64
+        },
+        {
+          "generation": 4,
+          "front_size": 12,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.791252,
+            0.0,
+            0.00529,
+            1.0,
+            0.005619
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 80
+        }
+      ],
+      "ground_truth_cause": "feature_instability",
+      "diagnosis_correct": true,
+      "repair_parameters": {
+        "repair": "FeatureReweighting",
+        "weights": [
+          0.998,
+          1.02,
+          1.005,
+          0.998,
+          0.963,
+          1.003,
+          1.006,
+          1.032,
+          1.02,
+          1.0,
+          0.997,
+          1.0
+        ],
+        "n_suppressed": 0
+      },
+      "intervention_size": 0.0109,
+      "parameter_ratio": 1.0,
+      "training_cost_gflops": 0.0053,
+      "stability": 0.9613,
+      "fairness_gap": 0.0256
+    },
+    {
+      "scenario": "input_corruption",
+      "failure_detected": true,
+      "detection": {
+        "failure_detected": true,
+        "reason": "ood_accuracy_drop_exceeds_sampling_noise",
+        "train_accuracy": 0.8375,
+        "val_accuracy": 0.7425,
+        "ood_accuracy": 0.5658,
+        "ood_balanced_accuracy": 0.5876,
+        "accuracy_drop": 0.1767,
+        "balanced_accuracy_drop": 0.181,
+        "noise_threshold": 0.0523,
+        "generalization_gap": 0.095,
+        "calibration_error": 0.299,
+        "fairness_gap": 0.1091,
+        "stability": 0.8297,
+        "per_level_accuracy": {
+          "0.8": 0.615,
+          "1.0": 0.5875,
+          "1.2": 0.495
+        }
+      },
+      "diagnosis": {
+        "confidences": {
+          "environment_shift": 0.0726,
+          "feature_instability": 0.1486,
+          "input_corruption": 0.9443,
+          "class_imbalance": 0.1734,
+          "overfitting": 0.2296
+        },
+        "evidence": {
+          "mean_feature_divergence": 0.0572,
+          "divergence_concentration": 0.251,
+          "missing_rate": 0.0526,
+          "outlier_rate": 0.0149,
+          "heavy_tail_rate": 0.0083,
+          "variance_inflation": 0.6967,
+          "label_prior_shift": 0.0254,
+          "generalization_gap": 0.095,
+          "max_feature_divergence": 0.1543
+        },
+        "primary": "input_corruption"
+      },
+      "selected_repair": "RobustPreprocessing",
+      "families_considered": [
+        "RobustPreprocessing"
+      ],
+      "performance_before": 0.5744,
+      "performance_after": 0.5656,
+      "performance_reference": 0.565,
+      "ood_recovery": 1.0,
+      "beat_reference": true,
+      "per_level_before": {
+        "0.6": 0.6925,
+        "1.0": 0.5875,
+        "1.5": 0.52,
+        "2.0": 0.4975
+      },
+      "per_level_after": {
+        "0.6": 0.6525,
+        "1.0": 0.5825,
+        "1.5": 0.5075,
+        "2.0": 0.52
+      },
+      "n_evaluations": 80,
+      "convergence_log": [
+        {
+          "generation": 1,
+          "front_size": 2,
+          "n_feasible": 2,
+          "best_per_objective": [
+            -0.58254,
+            0.051667,
+            0.003289,
+            1.0,
+            0.148768
+          ],
+          "mean_violation": 0.006379,
+          "n_evaluations": 32
+        },
+        {
+          "generation": 2,
+          "front_size": 3,
+          "n_feasible": 3,
+          "best_per_objective": [
+            -0.58254,
+            0.051667,
+            0.003289,
+            1.0,
+            0.148768
+          ],
+          "mean_violation": 0.004658,
+          "n_evaluations": 48
+        },
+        {
+          "generation": 3,
+          "front_size": 3,
+          "n_feasible": 4,
+          "best_per_objective": [
+            -0.58254,
+            0.051667,
+            0.003289,
+            1.0,
+            0.110879
+          ],
+          "mean_violation": 0.002591,
+          "n_evaluations": 64
+        },
+        {
+          "generation": 4,
+          "front_size": 5,
+          "n_feasible": 7,
+          "best_per_objective": [
+            -0.583406,
+            0.045833,
+            0.003217,
+            1.0,
+            0.110879
+          ],
+          "mean_violation": 0.001621,
+          "n_evaluations": 80
+        }
+      ],
+      "ground_truth_cause": "input_corruption",
+      "diagnosis_correct": true,
+      "repair_parameters": {
+        "repair": "RobustPreprocessing",
+        "clip_sigma": 5.934,
+        "augment_sigma": 0.013,
+        "patch_size": 62
+      },
+      "intervention_size": 0.05167,
+      "parameter_ratio": 1.0,
+      "training_cost_gflops": 0.00329,
+      "stability": 0.8275,
+      "fairness_gap": 0.0892
+    },
+    {
+      "scenario": "class_shift",
+      "failure_detected": true,
+      "detection": {
+        "failure_detected": true,
+        "reason": "ood_accuracy_drop_exceeds_sampling_noise",
+        "train_accuracy": 0.895,
+        "val_accuracy": 0.85,
+        "ood_accuracy": 0.7367,
+        "ood_balanced_accuracy": 0.7793,
+        "accuracy_drop": 0.1133,
+        "balanced_accuracy_drop": 0.0993,
+        "noise_threshold": 0.0438,
+        "generalization_gap": 0.045,
+        "calibration_error": 0.0882,
+        "fairness_gap": 0.0753,
+        "stability": 0.8856,
+        "per_level_accuracy": {
+          "0.8": 0.7275,
+          "1.0": 0.78,
+          "1.2": 0.7025
+        }
+      },
+      "diagnosis": {
+        "confidences": {
+          "environment_shift": 0.1759,
+          "feature_instability": 0.2566,
+          "input_corruption": 0.0166,
+          "class_imbalance": 0.7294,
+          "overfitting": 0.1608
+        },
+        "evidence": {
+          "mean_feature_divergence": 0.1087,
+          "divergence_concentration": 0.264,
+          "missing_rate": 0.0,
+          "outlier_rate": 0.0,
+          "heavy_tail_rate": 0.0,
+          "variance_inflation": 0.0125,
+          "label_prior_shift": 0.2575,
+          "generalization_gap": 0.045,
+          "max_feature_divergence": 0.2982
+        },
+        "primary": "class_imbalance"
+      },
+      "selected_repair": "ClassReweighting",
+      "families_considered": [
+        "ClassReweighting"
+      ],
+      "performance_before": 0.7594,
+      "performance_after": 0.7894,
+      "performance_reference": 0.8044,
+      "ood_recovery": 0.6667,
+      "beat_reference": false,
+      "per_level_before": {
+        "0.6": 0.7475,
+        "1.0": 0.78,
+        "1.5": 0.745,
+        "2.0": 0.765
+      },
+      "per_level_after": {
+        "0.6": 0.785,
+        "1.0": 0.7825,
+        "1.5": 0.79,
+        "2.0": 0.8
+      },
+      "n_evaluations": 80,
+      "convergence_log": [
+        {
+          "generation": 1,
+          "front_size": 8,
+          "n_feasible": 13,
+          "best_per_objective": [
+            -0.764078,
+            0.0,
+            0.00529,
+            1.0,
+            0.011173
+          ],
+          "mean_violation": 6.8e-05,
+          "n_evaluations": 32
+        },
+        {
+          "generation": 2,
+          "front_size": 9,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.779473,
+            0.0,
+            0.00529,
+            1.0,
+            0.011173
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 48
+        },
+        {
+          "generation": 3,
+          "front_size": 8,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.779473,
+            0.0,
+            0.00529,
+            1.0,
+            0.011173
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 64
+        },
+        {
+          "generation": 4,
+          "front_size": 10,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.779473,
+            0.0,
+            0.00529,
+            1.0,
+            0.011173
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 80
+        }
+      ],
+      "ground_truth_cause": "class_imbalance",
+      "diagnosis_correct": true,
+      "repair_parameters": {
+        "repair": "ClassReweighting",
+        "class_weights": [
+          2.144,
+          2.446,
+          1.527
+        ]
+      },
+      "intervention_size": 0.25984,
+      "parameter_ratio": 1.0,
+      "training_cost_gflops": 0.0053,
+      "stability": 0.932,
+      "fairness_gap": 0.1008
+    },
+    {
+      "scenario": "overfit",
+      "failure_detected": true,
+      "detection": {
+        "failure_detected": true,
+        "reason": "train_validation_gap_indicates_memorisation",
+        "train_accuracy": 1.0,
+        "val_accuracy": 0.7525,
+        "ood_accuracy": 0.7292,
+        "ood_balanced_accuracy": 0.7596,
+        "accuracy_drop": 0.0233,
+        "balanced_accuracy_drop": 0.0262,
+        "noise_threshold": 0.0502,
+        "generalization_gap": 0.2475,
+        "calibration_error": 0.1666,
+        "fairness_gap": 0.0274,
+        "stability": 0.9085,
+        "per_level_accuracy": {
+          "0.8": 0.695,
+          "1.0": 0.755,
+          "1.2": 0.7375
+        }
+      },
+      "diagnosis": {
+        "confidences": {
+          "environment_shift": 0.1833,
+          "feature_instability": 0.3777,
+          "input_corruption": 0.0548,
+          "class_imbalance": 0.3339,
+          "overfitting": 0.5162
+        },
+        "evidence": {
+          "mean_feature_divergence": 0.1218,
+          "divergence_concentration": 0.3301,
+          "missing_rate": 0.0,
+          "outlier_rate": 0.0001,
+          "heavy_tail_rate": 0.0,
+          "variance_inflation": 0.0422,
+          "label_prior_shift": 0.0643,
+          "generalization_gap": 0.2475,
+          "max_feature_divergence": 0.4338
+        },
+        "primary": "overfitting"
+      },
+      "selected_repair": "Regularisation",
+      "families_considered": [
+        "Regularisation"
+      ],
+      "performance_before": 0.7206,
+      "performance_after": 0.7412,
+      "performance_reference": 0.7913,
+      "ood_recovery": 0.292,
+      "beat_reference": false,
+      "per_level_before": {
+        "0.6": 0.7375,
+        "1.0": 0.755,
+        "1.5": 0.7125,
+        "2.0": 0.6775
+      },
+      "per_level_after": {
+        "0.6": 0.715,
+        "1.0": 0.7575,
+        "1.5": 0.7825,
+        "2.0": 0.71
+      },
+      "n_evaluations": 80,
+      "convergence_log": [
+        {
+          "generation": 1,
+          "front_size": 16,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.798552,
+            0.533741,
+            0.008297,
+            0.047059,
+            0.015459
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 32
+        },
+        {
+          "generation": 2,
+          "front_size": 16,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.798552,
+            0.530527,
+            0.008269,
+            0.040237,
+            0.015459
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 48
+        },
+        {
+          "generation": 3,
+          "front_size": 16,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.798552,
+            0.530527,
+            0.008155,
+            0.040237,
+            0.01199
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 64
+        },
+        {
+          "generation": 4,
+          "front_size": 16,
+          "n_feasible": 16,
+          "best_per_objective": [
+            -0.798552,
+            0.530527,
+            0.006811,
+            0.040237,
+            0.01199
+          ],
+          "mean_violation": 0.0,
+          "n_evaluations": 80
+        }
+      ],
+      "ground_truth_cause": "overfitting",
+      "diagnosis_correct": true,
+      "repair_parameters": {
+        "repair": "Regularisation",
+        "alpha": 2.4e-05,
+        "hidden_sizes": [
+          31,
+          9
+        ],
+        "extra_samples": 211
+      },
+      "intervention_size": 0.58803,
+      "parameter_ratio": 0.0713,
+      "training_cost_gflops": 0.04457,
+      "stability": 0.9623,
+      "fairness_gap": 0.0177
+    },
+    {
+      "scenario": "control",
+      "failure_detected": false,
+      "detection": {
+        "failure_detected": false,
+        "reason": "no_meaningful_degradation",
+        "train_accuracy": 0.89,
+        "val_accuracy": 0.8175,
+        "ood_accuracy": 0.82,
+        "ood_balanced_accuracy": 0.7999,
+        "accuracy_drop": -0.0025,
+        "balanced_accuracy_drop": -0.0042,
+        "noise_threshold": 0.0445,
+        "generalization_gap": 0.0725,
+        "calibration_error": 0.0683,
+        "fairness_gap": 0.0293,
+        "stability": 0.9656,
+        "per_level_accuracy": {
+          "0.8": 0.825,
+          "1.0": 0.8275,
+          "1.2": 0.8075
+        }
+      },
+      "diagnosis": {
+        "confidences": {
+          "environment_shift": 0.0388,
+          "feature_instability": 0.07,
+          "input_corruption": 0.0273,
+          "class_imbalance": 0.1422,
+          "overfitting": 0.3114
+        },
+        "evidence": {
+          "mean_feature_divergence": 0.023,
+          "divergence_concentration": 0.2983,
+          "missing_rate": 0.0,
+          "outlier_rate": 0.0001,
+          "heavy_tail_rate": 0.0,
+          "variance_inflation": 0.0207,
+          "label_prior_shift": 0.0192,
+          "generalization_gap": 0.0725,
+          "max_feature_divergence": 0.0586
+        },
+        "primary": "overfitting"
+      },
+      "selected_repair": "none",
+      "families_considered": [],
+      "performance_before": 0.7994,
+      "performance_after": 0.7994,
+      "performance_reference": 0.7994,
+      "ood_recovery": 1.0,
+      "beat_reference": false,
+      "per_level_before": {
+        "0.6": 0.8025,
+        "1.0": 0.8275,
+        "1.5": 0.795,
+        "2.0": 0.7725
+      },
+      "per_level_after": {
+        "0.6": 0.8025,
+        "1.0": 0.8275,
+        "1.5": 0.795,
+        "2.0": 0.7725
+      },
+      "n_evaluations": 0,
+      "convergence_log": [],
+      "ground_truth_cause": "none",
+      "diagnosis_correct": true,
+      "repair_parameters": {
+        "repair": "none",
+        "rationale": "no meaningful degradation detected"
+      },
+      "intervention_size": 0.0,
+      "parameter_ratio": 1.0,
+      "training_cost_gflops": 0.0,
+      "stability": 0.9656,
+      "fairness_gap": 0.0293
+    }
+  ]
+}

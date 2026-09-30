@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets -- never commit. Only .env.example is tracked.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Environments
+.venv/
+venv/
+env/
+
+# Local run artefacts (reports/latest.json IS committed as evidence)
+reports/tmp_*
+reports/smoke.json
+*.log
+.DS_Store

@@ -1,0 +1,1610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root { color-scheme: light; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #F6F8F8; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>AdaptX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;1,400&display=swap">
+
+<style>
+/* Layout: a clinical chart. One reading column; each failure case is a patient
+   card with vitals, diagnosis and a recovery curve drawn to a shared scale. */
+:root {
+  --bg: #F6F8F8;
+  --surface: #FFFFFF;
+  --sunk: #EDF1F1;
+  --ink: #12171A;
+  --muted: #5B666D;
+  --line: #DCE3E4;
+  --accent: #0E7A65;
+  --accent-soft: #D7ECE6;
+  --alert: #B4431A;
+  --alert-soft: #F6E3DA;
+
+  --display: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --serif: "IBM Plex Serif", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1113;
+    --surface: #151A1D;
+    --sunk: #1D2427;
+    --ink: #E4EAEC;
+    --muted: #8B979D;
+    --line: #232B2F;
+    --accent: #3EBFA0;
+    --accent-soft: #14312B;
+    --alert: #E08050;
+    --alert-soft: #331E14;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1113;
+  --surface: #151A1D;
+  --sunk: #1D2427;
+  --ink: #E4EAEC;
+  --muted: #8B979D;
+  --line: #232B2F;
+  --accent: #3EBFA0;
+  --accent-soft: #14312B;
+  --alert: #E08050;
+  --alert-soft: #331E14;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 0;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  padding-block: 40px 28px;
+}
+.chartline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 26px;
+}
+.chartline span { white-space: nowrap; }
+h1 {
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 8vw, 4.3rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+.sub {
+  font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+  color: var(--muted);
+  max-width: 34ch;
+  margin-top: 16px;
+}
+.thesis {
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
+  line-height: 1.45;
+  border-left: 3px solid var(--accent);
+  padding-left: 20px;
+  margin-top: 30px;
+  max-width: 54ch;
+}
+
+/* ---------- vitals row ---------- */
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-block: 34px;
+}
+.vital { background: var(--surface); padding: 20px 18px; min-width: 0; }
+.vital .k {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.vital .v {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+  line-height: 1.1;
+}
+.vital .n { font-size: 0.8rem; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+.vital.hero .v { color: var(--accent); }
+
+/* ---------- sections ---------- */
+section { padding-block: 44px; border-top: 1px solid var(--line); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+h2 {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.lede { color: var(--muted); max-width: 62ch; margin-top: 12px; }
+
+/* ---------- live demo ---------- */
+.lab { border: 1px solid var(--line); background: var(--surface); margin-top: 26px; }
+.lab-controls {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--sunk);
+}
+@media (min-width: 720px) { .lab-controls { grid-template-columns: 1.4fr 1.6fr auto auto; align-items: end; } }
+.ctl { min-width: 0; }
+.ctl label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.ctl select, .ctl input[type="number"] {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 2px;
+}
+.ctl input[type="range"] { width: 100%; accent-color: var(--accent); }
+.rangerow { display: flex; align-items: center; gap: 10px; }
+.rangeval {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 2.6em;
+  text-align: right;
+}
+button.run {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 10px 20px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+button.run:hover:not(:disabled) { filter: brightness(1.08); }
+button.run:disabled { opacity: 0.55; cursor: progress; }
+button.run.ghost { background: transparent; color: var(--muted); border-color: var(--line); }
+button.run:focus-visible, .ctl select:focus-visible, .ctl input:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+
+.lab-body { display: grid; gap: 1px; background: var(--line); }
+@media (min-width: 860px) { .lab-body { grid-template-columns: 1fr 1fr 1.1fr; } }
+.panel { background: var(--surface); padding: 18px; min-width: 0; }
+.panel h4 {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 14px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.panel h4 .step { color: var(--accent); }
+
+.kv { display: grid; gap: 7px; font-family: var(--mono); font-size: 11px; }
+.kv .row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.kv .row span:first-child { color: var(--muted); }
+.kv .row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.kv .row.flag span:last-child { color: var(--alert); }
+.kv .row.good span:last-child { color: var(--accent); }
+
+.verdict {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 2px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.verdict.warn { background: var(--alert-soft); color: var(--alert); }
+.verdict.ok { background: var(--accent-soft); color: var(--accent); }
+.verdict.idle { background: var(--sunk); color: var(--muted); }
+
+.genlog {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-height: 128px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: var(--sunk);
+  padding: 10px;
+  white-space: pre;
+  margin-bottom: 14px;
+}
+.genlog b { color: var(--ink); font-weight: 600; }
+
+.bigresult { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.bigresult .b { min-width: 0; }
+.bigresult .bk {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.bigresult .bv {
+  font-family: var(--mono); font-size: 1.45rem; font-weight: 600;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.2;
+}
+.bigresult .bv.up { color: var(--accent); }
+
+.lab-note {
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.lab-note strong { color: var(--ink); font-weight: 600; }
+
+.spin { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
+
+/* ---------- case cards ---------- */
+.cases { display: grid; gap: 16px; margin-top: 28px; }
+@media (min-width: 760px) { .cases { grid-template-columns: 1fr 1fr; } }
+.case {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 20px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.case.healthy { border-color: var(--accent); }
+.case-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.case-name {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.case-truth { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+.pill {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.pill.ok { background: var(--accent-soft); color: var(--accent); }
+.pill.warn { background: var(--alert-soft); color: var(--alert); }
+
+/* diagnosis bars */
+.dx { display: grid; gap: 5px; }
+.dx-row {
+  display: grid;
+  grid-template-columns: 96px 1fr 34px;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.dx-row.lead { color: var(--ink); font-weight: 600; }
+.dx-track { background: var(--sunk); height: 7px; min-width: 0; }
+.dx-fill { height: 100%; background: var(--line); }
+.dx-row.lead .dx-fill { background: var(--accent); }
+.dx-val { text-align: right; font-variant-numeric: tabular-nums; }
+
+.case-chart { margin-top: 2px; }
+.case-chart svg { display: block; width: 100%; height: auto; }
+.case-chart text { font-family: var(--mono); fill: var(--muted); }
+.case-chart .grid { stroke: var(--line); stroke-width: 1; }
+.case-chart .divider { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: .45; }
+.case-chart .before { stroke: var(--alert); fill: none; stroke-width: 1.6; }
+.case-chart .before-dot { fill: var(--alert); }
+.case-chart .after { stroke: var(--accent); fill: none; stroke-width: 2; }
+.case-chart .after-dot { fill: var(--accent); }
+
+.case-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+.case-foot .k { color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; font-size: 9px; }
+.case-foot .v { font-variant-numeric: tabular-nums; font-weight: 600; margin-top: 2px; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 20px;
+  align-items: center;
+}
+.swatch { display: inline-block; width: 16px; height: 2px; vertical-align: middle; margin-right: 6px; }
+
+/* ---------- pipeline ---------- */
+.stages { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 26px; }
+@media (min-width: 720px) { .stages { grid-template-columns: repeat(5, 1fr); } }
+.stage { background: var(--surface); padding: 18px 16px; min-width: 0; }
+.stage .num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+.stage h3 { font-size: 0.98rem; font-weight: 650; margin-top: 8px; letter-spacing: -0.01em; }
+.stage p { font-size: 0.82rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+/* ---------- prose blocks ---------- */
+.cols { display: grid; gap: 22px; margin-top: 26px; }
+@media (min-width: 760px) { .cols { grid-template-columns: 1fr 1fr; } }
+.block { min-width: 0; }
+.block h3 {
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.block p { font-size: 0.9rem; color: var(--muted); margin-top: 10px; }
+.block strong { color: var(--ink); font-weight: 600; }
+
+code, .m { font-family: var(--mono); font-size: 0.85em; }
+code { background: var(--sunk); padding: 1px 5px; border-radius: 2px; }
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-top: 22px;
+}
+.fig { background: var(--surface); padding: 16px; min-width: 0; }
+.fig .v {
+  font-family: var(--mono);
+  font-size: 1.45rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.fig .k { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+ol.limits { margin: 18px 0 0; padding-left: 0; list-style: none; counter-reset: lim; display: grid; gap: 12px; }
+ol.limits li {
+  counter-increment: lim;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  min-width: 0;
+}
+ol.limits li::before {
+  content: counter(lim, decimal-leading-zero);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  padding-top: 4px;
+}
+ol.limits strong { color: var(--ink); font-weight: 600; }
+
+.tablewrap { overflow-x: auto; margin-top: 22px; border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; min-width: 520px; background: var(--surface); }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+th {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+  background: var(--sunk);
+}
+td.m { font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+
+footer {
+  border-top: 1px solid var(--line);
+  padding-block: 28px 44px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="chartline">
+      <span>OptiForge 2026</span>
+      <span>IEEE EMBS &times; IEEE CIS</span>
+      <span>Track 04 &mdash; ML &amp; AI</span>
+      <span>Team OPT-26-5711</span>
+    </div>
+    <h1>AdaptX</h1>
+    <p class="sub">Autonomous diagnosis and multi-objective evolutionary repair of failing ML models.</p>
+    <p class="thesis">A model was working. The environment changed. It broke. Most systems can tell you <em>that</em> it broke &mdash; this one works out <em>why</em>, then makes the smallest change that fixes it.</p>
+  </header>
+
+  <div class="vitals">
+    <div class="vital hero">
+      <div class="k">Fitness</div>
+      <div class="v">0.8777</div>
+      <div class="n">composite benchmark score</div>
+    </div>
+    <div class="vital">
+      <div class="k">Diagnosis</div>
+      <div class="v">6 / 6</div>
+      <div class="n">causes correctly identified</div>
+    </div>
+    <div class="vital">
+      <div class="k">Mean recovery</div>
+      <div class="v">0.78</div>
+      <div class="n">of lost performance restored</div>
+    </div>
+    <div class="vital">
+      <div class="k">Runtime</div>
+      <div class="v">85<span style="font-size:1rem">s</span></div>
+      <div class="n">full 6-scenario benchmark</div>
+    </div>
+    <div class="vital">
+      <div class="k">Tests</div>
+      <div class="v">80</div>
+      <div class="n">passing, incl. determinism</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="eyebrow">The loop</div>
+    <h2>Detect, diagnose, treat &mdash; then check the patient recovered</h2>
+    <p class="lede">The diagnosis is not decoration. It selects which repair family the evolutionary search explores, so the system never searches all five blindly. That is the operational difference between this and generic AutoML.</p>
+    <div class="stages">
+      <div class="stage">
+        <div class="num">STAGE 1</div>
+        <h3>Detect</h3>
+        <p>Is the drop real, or sampling noise? The threshold is the binomial standard error of the accuracy estimate, so it adapts to sample size instead of being a tuned constant.</p>
+      </div>
+      <div class="stage">
+        <div class="num">STAGE 2</div>
+        <h3>Diagnose</h3>
+        <p>An evidence vector over five causes. No classifier is trained &mdash; each cause is scored by a direct measurement of its own mechanism.</p>
+      </div>
+      <div class="stage">
+        <div class="num">STAGE 3</div>
+        <h3>Select</h3>
+        <p>The leading hypothesis routes to one repair family. A runner-up shortlist provides a fallback, because a diagnosis is a belief, not a certainty.</p>
+      </div>
+      <div class="stage">
+        <div class="num">STAGE 4</div>
+        <h3>Evolve</h3>
+        <p>NSGA-II over five objectives and three hard constraints. Written from scratch in NumPy &mdash; no pymoo dependency.</p>
+      </div>
+      <div class="stage">
+        <div class="num">STAGE 5</div>
+        <h3>Validate</h3>
+        <p>Scored on drift levels the search never saw, then emitted as a machine-readable repair report.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="lab">
+    <div class="eyebrow">Live</div>
+    <h2>Run the pipeline</h2>
+    <p class="lede">This is not a recording. Choose a failure mode and a drift strength, and the page generates a fresh dataset, trains a classifier on it, breaks the environment, then runs detection, diagnosis and an evolutionary repair search in your browser. The diagnosis formulas are ported line for line from the Python; the model is a smaller one, so it finishes in about a second.</p>
+
+    <div class="lab">
+      <div class="lab-controls">
+        <div class="ctl">
+          <label for="lab-scenario">Failure to induce</label>
+          <select id="lab-scenario">
+            <option value="env_shift">Environment shift</option>
+            <option value="feature_shift">Feature instability</option>
+            <option value="input_corruption">Input corruption</option>
+            <option value="control">None &mdash; healthy control</option>
+          </select>
+        </div>
+        <div class="ctl">
+          <label for="lab-level">Drift strength</label>
+          <div class="rangerow">
+            <input type="range" id="lab-level" min="0" max="2.5" step="0.1" value="1.8">
+            <span class="rangeval" id="lab-levelval">1.8</span>
+          </div>
+        </div>
+        <div class="ctl" style="max-width:130px">
+          <label for="lab-seed">Seed</label>
+          <input type="number" id="lab-seed" value="7" min="0" max="99999" step="1">
+        </div>
+        <div class="ctl">
+          <button class="run" id="lab-run">Diagnose &amp; repair</button>
+        </div>
+      </div>
+
+      <div class="lab-body">
+        <div class="panel">
+          <h4><span>1 &middot; Detect</span><span class="step" id="lab-s1"></span></h4>
+          <div class="verdict idle" id="lab-verdict">awaiting run</div>
+          <div class="kv" id="lab-symptoms">
+            <div class="row"><span>train accuracy</span><span>&mdash;</span></div>
+            <div class="row"><span>validation accuracy</span><span>&mdash;</span></div>
+            <div class="row"><span>OOD accuracy</span><span>&mdash;</span></div>
+            <div class="row"><span>accuracy drop</span><span>&mdash;</span></div>
+            <div class="row"><span>balanced-acc drop</span><span>&mdash;</span></div>
+            <div class="row"><span>noise threshold</span><span>&mdash;</span></div>
+            <div class="row"><span>train/val gap</span><span>&mdash;</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4><span>2 &middot; Diagnose</span><span class="step" id="lab-s2"></span></h4>
+          <div class="dx" id="lab-dx">
+            <div class="dx-row"><span>env shift</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
+            <div class="dx-row"><span>feature inst.</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
+            <div class="dx-row"><span>corruption</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
+            <div class="dx-row"><span>imbalance</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
+            <div class="dx-row"><span>overfitting</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
+          </div>
+          <div class="kv" id="lab-evidence" style="margin-top:16px">
+            <div class="row"><span>mean divergence</span><span>&mdash;</span></div>
+            <div class="row"><span>concentration</span><span>&mdash;</span></div>
+            <div class="row"><span>missing rate</span><span>&mdash;</span></div>
+            <div class="row"><span>heavy-tail rate</span><span>&mdash;</span></div>
+            <div class="row"><span>prior shift</span><span>&mdash;</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4><span>3&ndash;5 &middot; Select, evolve, validate</span><span class="step" id="lab-s3"></span></h4>
+          <div class="bigresult">
+            <div class="b"><div class="bk">Repair chosen</div><div class="bv" id="lab-repair" style="font-size:0.95rem">&mdash;</div></div>
+            <div class="b"><div class="bk">Intervention</div><div class="bv" id="lab-size" style="font-size:0.95rem">&mdash;</div></div>
+            <div class="b"><div class="bk">Before</div><div class="bv" id="lab-before">&mdash;</div></div>
+            <div class="b"><div class="bk">After</div><div class="bv up" id="lab-after">&mdash;</div></div>
+          </div>
+          <div class="genlog" id="lab-log">Press <b>Diagnose &amp; repair</b> to start.
+Nothing is precomputed &mdash; every number
+on this panel is produced by code
+running on this page.</div>
+          <div class="kv" id="lab-final"></div>
+        </div>
+      </div>
+
+      <div class="lab-note">
+        <strong>What is real and what is simplified.</strong> Data generation, the perturbations, the detection rule, every diagnosis statistic and the NSGA-II search (non-dominated sorting, crowding distance, tournament selection, uniform crossover, bit-flip mutation, constraint-domination) are the same algorithms as the submission. The base learner here is multinomial logistic regression rather than the MLP, and the population and dataset are smaller, so a run finishes in about a second instead of 85.</p>
+        <p style="margin-top:10px"><strong>Two things worth trying.</strong> Drag the drift strength down toward zero and the detector stops firing &mdash; that is the do-no-harm property, not a bug: the threshold is the sampling noise of the accuracy estimate, so a drop it cannot distinguish from chance is correctly ignored. And re-run with the same seed to see identical numbers, then change the seed to watch them move.</p>
+        <p style="margin-top:10px"><strong>Only one repair family runs here.</strong> The submission implements five &mdash; PatchML, feature reweighting, class reweighting, robust preprocessing and regularisation &mdash; and routes each diagnosis to its own. This page ships PatchML's search alone, so when the diagnosis points elsewhere the panel names the family the real system would use and states which one actually ran.</p>
+        <p style="margin-top:10px"><strong>One scenario is missing here.</strong> The full benchmark includes class imbalance; this demo leaves it out because a fixed linear model is provably insensitive to a pure prior shift &mdash; per-class recall does not change when only the class proportions do &mdash; so it would show a failure that never arrives. The MLP in the submission does degrade under it, and it is scored there.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Case notes</div>
+    <h2>Six patients, six charts</h2>
+    <p class="lede">Each card shows what the system concluded and what the repair did across perturbation strength. The search only ever optimised on drift levels 0.8&ndash;1.2; the curves below are scored at 0.6, 1.0, 1.5 and 2.0, so everything right of the dashed line is extrapolation.</p>
+    <div class="cases" id="cases"></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--alert)"></span>failed model</span>
+      <span><span class="swatch" style="background:var(--accent)"></span>after repair</span>
+      <span><span class="swatch" style="background:var(--muted);opacity:.5"></span>hidden drift levels (unseen by the search)</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Headline result</div>
+    <h2>PatchML: repairing a shifted model with 2.4% of the new data</h2>
+    <p class="lede">When the diagnosis is environment shift, PatchML searches for the smallest subset of newly available data that restores performance. The obstacle is combinatorial: one bit per pool sample means a search space of 2<sup>1200</sup>.</p>
+    <div class="figures">
+      <div class="fig"><div class="v">1200</div><div class="k">samples available</div></div>
+      <div class="fig"><div class="v">192</div><div class="k">shortlisted by margin</div></div>
+      <div class="fig"><div class="v">29</div><div class="k">actually used</div></div>
+      <div class="fig"><div class="v">0.61 &rarr; 0.74</div><div class="k">OOD accuracy</div></div>
+      <div class="fig"><div class="v">0.82</div><div class="k">recovery</div></div>
+    </div>
+    <div class="cols">
+      <div class="block">
+        <h3>Diagnosis-guided candidate pruning</h3>
+        <p>We ask the failing model to predict on the new pool and compute each sample's <strong>margin</strong> &mdash; the gap between its top two class probabilities. The 192 lowest-margin rows are kept: those are the samples lying nearest the decision boundary the shift has displaced. A sample the model is confidently right about carries almost no repair signal.</p>
+        <p>This cuts the space from 2<sup>1200</sup> to 2<sup>192</sup>, and uses only the model's own outputs &mdash; no labels, no ground truth &mdash; so it is legitimate on unlabelled data at deployment time.</p>
+      </div>
+      <div class="block">
+        <h3>Replay is a correctness requirement</h3>
+        <p>Every fine-tune mixes in original training samples. Without replay, adapting on a small shifted patch causes catastrophic forgetting, and a class can be absent from the batch entirely &mdash; at which point <code>partial_fit</code> cannot run at all.</p>
+        <p>Generation zero is seeded with prefix masks over the uncertainty ranking, so the search starts from a strong front rather than hunting for one. That is why a five-generation budget suffices.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Search</div>
+    <h2>Five objectives, no weighted sum</h2>
+    <p class="lede">"Best" is not one thing. A repair using 500 samples may be marginally more accurate than one using 30; which wins depends on what you can afford. So the search returns the trade-off surface, and a single deployment point is chosen from it afterwards.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Objective (minimised)</th><th>Why it is in the search</th></tr></thead>
+        <tbody>
+          <tr><td class="m">0</td><td class="m">&minus;mean OOD score</td><td>generalisation recovery</td></tr>
+          <tr><td class="m">1</td><td class="m">intervention size</td><td>how much of the system we touched</td></tr>
+          <tr><td class="m">2</td><td class="m">log(1 + training cost)</td><td>FLOP-proportional, hardware-independent</td></tr>
+          <tr><td class="m">3</td><td class="m">parameter ratio</td><td>deployment footprint vs the original</td></tr>
+          <tr><td class="m">4</td><td class="m">1 &minus; stability</td><td>variance across drift levels &mdash; this is what makes repairs extrapolate</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cols">
+      <div class="block">
+        <h3>Why not scalarise</h3>
+        <p>A weighted sum bakes in a preference nobody chose, and it <strong>cannot reach non-convex regions of the front</strong> &mdash; no weight vector selects those points, so you would never find them. Weights are applied only when picking the final model from the finished front, never during exploration.</p>
+      </div>
+      <div class="block">
+        <h3>Constraints without penalty weights</h3>
+        <p>Three hard constraints &mdash; beat the failed model by at least 0.01, stay under 1.5&times; the parameter count, keep the sub-population accuracy gap under 0.25 &mdash; are enforced by <strong>constraint-domination</strong>. Feasible beats infeasible; among infeasible, less violation wins. No penalty coefficient to justify.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Reproducibility</div>
+    <h2>Determinism, and the three ways it breaks</h2>
+    <p class="lede">An earlier build was deterministic for a single evaluation and for generation one, then diverged. That signature has exactly three causes. All three are closed by construction, not patched over.</p>
+    <div class="cols">
+      <div class="block">
+        <h3>1 &mdash; A shared global RNG stream</h3>
+        <p>If evaluation draws from the same global stream as the genetic operators, any change in how many draws an evaluation makes shifts the stream for every later operator call. Generation one looks fine because nothing has perturbed the stream yet. <strong>Fixed</strong> by seeding each evaluation from a BLAKE2b hash of the genome's own contents, so equal genomes are guaranteed equal fitness.</p>
+      </div>
+      <div class="block">
+        <h3>2 &mdash; Threaded BLAS</h3>
+        <p>Multi-threaded kernels split dot products across threads, so summation order depends on thread scheduling and identical inputs can produce bit-different weights. SGD amplifies that until it flips dominance comparisons between near-tied candidates. <strong>Fixed</strong> by pinning thread counts on the first line of the entrypoint, before NumPy is imported.</p>
+      </div>
+      <div class="block">
+        <h3>3 &mdash; Unstable sorts</h3>
+        <p>Ties in crowding distance resolved by an unstable sort give different survivors run to run. <strong>Fixed</strong> by making every sort stable, and by keeping set and dictionary iteration order out of every decision.</p>
+      </div>
+      <div class="block">
+        <h3>The consequence</h3>
+        <p>Fitness becomes a genuine mathematical function on genome space rather than a random variable, which is what lets the convergence argument hold at all. Verified two ways: a twenty-generation test that deliberately desynchronises the global RNG mid-run, and <strong>two separate processes producing byte-identical reports</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Honest accounting</div>
+    <h2>What this does not do</h2>
+    <p class="lede">Stated here rather than waiting to be found. A system that reports only its wins is not a diagnostic system.</p>
+    <ol class="limits">
+      <li><span><strong>The benchmark is synthetic.</strong> Scenarios are generated with known causes, which is what makes diagnosis measurable &mdash; but transfer to real-world drift is unproven.</span></li>
+      <li><span><strong>Classification only.</strong> Regression and generative modelling are in the track theme and are not implemented.</span></li>
+      <li><span><strong>Overfitting recovers only 0.29.</strong> Repairing memorisation needs more than the 70 training samples that scenario has; regularisation alone cannot recover what was never learned.</span></li>
+      <li><span><strong>Input corruption is roughly neutral.</strong> Its full-retrain ceiling sits <em>below</em> the failed model, so the recovery metric is degenerate there and the repair neither helps nor harms.</span></li>
+      <li><span><strong>One cause per scenario.</strong> Real failures are often compound. The evidence vector supports mixtures; the benchmark does not test them.</span></li>
+      <li><span><strong>Diagnostic scales are chosen, not learned.</strong> They are set from each statistic's null distribution on unperturbed data and are monotone in perturbation strength &mdash; but they remain design choices.</span></li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>Python &middot; NumPy &middot; scikit-learn</span>
+    <span>NSGA-II implemented from scratch</span>
+    <span>No pymoo &middot; no secrets &middot; no network</span>
+    <span>Figures from reports/latest.json &middot; seed 20260930</span>
+  </footer>
+
+</div>
+
+<script>
+const LEVELS = [0.6, 1.0, 1.5, 2.0];
+const VAL_MAX = 1.2; // the search never saw levels beyond this
+
+const CASES = [
+  { id: "env_shift", truth: "environment shift", repair: "PatchML", detected: true,
+    dx: { environment_shift: 0.9266, feature_instability: 0.0194, input_corruption: 0.2388, class_imbalance: 0.0046, overfitting: 0.0084 },
+    lead: "environment_shift",
+    before: [0.78, 0.655, 0.5125, 0.4825], after: [0.785, 0.78, 0.685, 0.7175],
+    recovery: 0.821, intervention: "29 / 1200 samples" },
+  { id: "feature_shift", truth: "feature instability", repair: "FeatureReweighting", detected: true,
+    dx: { environment_shift: 0.2148, feature_instability: 0.9088, input_corruption: 0.2582, class_imbalance: 0.1094, overfitting: 0.0587 },
+    lead: "feature_instability",
+    before: [0.6725, 0.60, 0.5425, 0.5375], after: [0.8025, 0.805, 0.6975, 0.7025],
+    recovery: 0.910, intervention: "13 / 1200 samples" },
+  { id: "input_corruption", truth: "input corruption", repair: "RobustPreprocessing", detected: true,
+    dx: { environment_shift: 0.0726, feature_instability: 0.1486, input_corruption: 0.9443, class_imbalance: 0.1734, overfitting: 0.2296 },
+    lead: "input_corruption",
+    before: [0.6925, 0.5875, 0.52, 0.4975], after: [0.6525, 0.5825, 0.5075, 0.52],
+    recovery: null, intervention: "clip 5.9σ, 62 samples" },
+  { id: "class_shift", truth: "class imbalance", repair: "ClassReweighting", detected: true,
+    dx: { environment_shift: 0.1759, feature_instability: 0.2566, input_corruption: 0.0166, class_imbalance: 0.7294, overfitting: 0.1608 },
+    lead: "class_imbalance",
+    before: [0.7475, 0.78, 0.745, 0.765], after: [0.785, 0.7825, 0.79, 0.80],
+    recovery: 0.667, intervention: "weights 2.14 / 2.45 / 1.53" },
+  { id: "overfit", truth: "overfitting", repair: "Regularisation", detected: true,
+    dx: { environment_shift: 0.1833, feature_instability: 0.3777, input_corruption: 0.0548, class_imbalance: 0.3339, overfitting: 0.5162 },
+    lead: "overfitting",
+    before: [0.7375, 0.755, 0.7125, 0.6775], after: [0.715, 0.7575, 0.7825, 0.71],
+    recovery: 0.292, intervention: "α 2.4e−5, widths 31/9" },
+  { id: "control", truth: "healthy — no perturbation", repair: "none", detected: false,
+    dx: { environment_shift: 0.0388, feature_instability: 0.07, input_corruption: 0.0273, class_imbalance: 0.1422, overfitting: 0.3114 },
+    lead: null,
+    before: [0.8025, 0.8275, 0.795, 0.7725], after: [0.8025, 0.8275, 0.795, 0.7725],
+    recovery: null, intervention: "model left untouched" }
+];
+
+const LABEL = {
+  environment_shift: "env shift",
+  feature_instability: "feature inst.",
+  input_corruption: "corruption",
+  class_imbalance: "imbalance",
+  overfitting: "overfitting"
+};
+
+// Chart geometry. A single shared y-domain across every card, so curves are
+// visually comparable between patients rather than each auto-scaling.
+const W = 320, H = 132, L = 34, R = 10, T = 12, B = 26;
+const Y_MIN = 0.45, Y_MAX = 0.85;
+const xOf = v => L + (v - LEVELS[0]) / (LEVELS[LEVELS.length - 1] - LEVELS[0]) * (W - L - R);
+const yOf = v => T + (Y_MAX - v) / (Y_MAX - Y_MIN) * (H - T - B);
+
+function path(values) {
+  return values.map((v, i) => (i ? "L" : "M") + xOf(LEVELS[i]).toFixed(1) + " " + yOf(v).toFixed(1)).join(" ");
+}
+
+function chart(c) {
+  const ticks = [0.5, 0.6, 0.7, 0.8];
+  let g = "";
+  for (const t of ticks) {
+    const y = yOf(t).toFixed(1);
+    g += `<line class="grid" x1="${L}" y1="${y}" x2="${W - R}" y2="${y}"/>`;
+    g += `<text x="${L - 6}" y="${(+y + 3).toFixed(1)}" font-size="8" text-anchor="end">${t.toFixed(1)}</text>`;
+  }
+  // boundary between the drift levels the search optimised on and the hidden ones
+  const bx = xOf(VAL_MAX).toFixed(1);
+  g += `<line class="divider" x1="${bx}" y1="${T}" x2="${bx}" y2="${H - B}"/>`;
+  g += `<text x="${(+bx + 4).toFixed(1)}" y="${T + 8}" font-size="7.5" opacity="0.8">hidden →</text>`;
+
+  for (const lv of LEVELS) {
+    g += `<text x="${xOf(lv).toFixed(1)}" y="${H - 10}" font-size="8" text-anchor="middle">${lv.toFixed(1)}</text>`;
+  }
+  g += `<text x="${L}" y="${H - 1}" font-size="7.5">drift level</text>`;
+
+  const same = c.before.every((v, i) => v === c.after[i]);
+  if (!same) {
+    g += `<path class="before" d="${path(c.before)}"/>`;
+    for (let i = 0; i < LEVELS.length; i++) {
+      g += `<circle class="before-dot" cx="${xOf(LEVELS[i]).toFixed(1)}" cy="${yOf(c.before[i]).toFixed(1)}" r="2.2"/>`;
+    }
+  }
+  g += `<path class="after" d="${path(c.after)}"/>`;
+  for (let i = 0; i < LEVELS.length; i++) {
+    g += `<circle class="after-dot" cx="${xOf(LEVELS[i]).toFixed(1)}" cy="${yOf(c.after[i]).toFixed(1)}" r="2.4"/>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Accuracy across drift levels for ${c.id}"><g>${g}</g></svg>`;
+}
+
+function dxBars(c) {
+  return Object.entries(c.dx)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `
+      <div class="dx-row${k === c.lead ? " lead" : ""}">
+        <span>${LABEL[k]}</span>
+        <span class="dx-track"><span class="dx-fill" style="width:${(v * 100).toFixed(1)}%"></span></span>
+        <span class="dx-val">${v.toFixed(2)}</span>
+      </div>`).join("");
+}
+
+document.getElementById("cases").innerHTML = CASES.map(c => `
+  <article class="case${c.detected ? "" : " healthy"}">
+    <div class="case-head">
+      <div>
+        <div class="case-name">${c.id}</div>
+        <div class="case-truth">true cause: ${c.truth}</div>
+      </div>
+      <span class="pill ${c.detected ? "warn" : "ok"}">${c.detected ? "failure detected" : "healthy · untouched"}</span>
+    </div>
+    <div class="dx">${dxBars(c)}</div>
+    <div class="case-chart">${chart(c)}</div>
+    <div class="case-foot">
+      <div><div class="k">Repair</div><div class="v">${c.repair}</div></div>
+      <div><div class="k">Recovery</div><div class="v">${c.recovery === null ? "—" : c.recovery.toFixed(3)}</div></div>
+      <div style="grid-column:1/-1"><div class="k">Intervention</div><div class="v">${c.intervention}</div></div>
+    </div>
+  </article>`).join("");
+</script>
+
+<script>
+/* =====================================================================
+   AdaptX live demo.
+
+   A faithful browser port of the submitted pipeline. The diagnosis
+   statistics and the NSGA-II operators are the same algorithms as the
+   Python; the base learner is multinomial logistic regression instead of
+   an MLP so a full run finishes in about a second.
+
+   Determinism is preserved the same way it is in the submission: a seeded
+   generator is threaded explicitly through every stochastic step, and the
+   PatchML fitness is seeded from a hash of the genome's own contents, so
+   equal genomes always score equally.
+   ===================================================================== */
+(function () {
+  "use strict";
+
+  // ---------- seeded RNG (mulberry32 + Box-Muller) ----------
+  function rngFrom(seed) {
+    let a = (seed >>> 0) || 1;
+    let spare = null;
+    const next = () => {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    return {
+      next,
+      int: n => Math.floor(next() * n),
+      normal() {
+        if (spare !== null) { const s = spare; spare = null; return s; }
+        let u = 0, v = 0;
+        while (u === 0) u = next();
+        while (v === 0) v = next();
+        const r = Math.sqrt(-2 * Math.log(u));
+        spare = r * Math.sin(2 * Math.PI * v);
+        return r * Math.cos(2 * Math.PI * v);
+      }
+    };
+  }
+
+  // Content-addressed seed: mirrors determinism.genome_seed in the Python.
+  function genomeSeed(base, genome) {
+    let h = (base >>> 0) ^ 0x9E3779B9;
+    for (let i = 0; i < genome.length; i++) {
+      h ^= (genome[i] ? 0x85EBCA6B : 0xC2B2AE35) + i;
+      h = Math.imul(h ^ (h >>> 13), 0x5BD1E995);
+      h >>>= 0;
+    }
+    return h >>> 0;
+  }
+
+  // ---------- config (mirrors src/config.py, scaled down) ----------
+  const CFG = {
+    d: 10, k: 3, informative: 7,
+    nTrain: 400, nVal: 300, nPool: 600, nOod: 300,
+    valLevels: [0.8, 1.0, 1.2],
+    epochs: 90, lr: 0.28, l2: 5e-3,
+    replay: 140, ftEpochs: 26,
+    pop: 12, gens: 6, shortlist: 64,
+    minPatch: 5, maxPatchFrac: 0.25,
+    noiseSigmas: 2.0, minDrop: 0.02, gapThresh: 0.12,
+    minGain: 0.01
+  };
+
+  // ---------- data generation (mirrors src/scenarios.py) ----------
+  function teacher(rng) {
+    const W = [];
+    for (let j = 0; j < CFG.d; j++) {
+      const row = new Float64Array(CFG.k);
+      if (j < CFG.informative) for (let c = 0; c < CFG.k; c++) row[c] = rng.normal() * 1.1;
+      W.push(row);
+    }
+    return W;
+  }
+
+  function softmaxRow(logits) {
+    let m = -Infinity;
+    for (const v of logits) if (v > m) m = v;
+    let s = 0;
+    const out = new Float64Array(logits.length);
+    for (let i = 0; i < logits.length; i++) { out[i] = Math.exp(logits[i] - m); s += out[i]; }
+    for (let i = 0; i < out.length; i++) out[i] /= s;
+    return out;
+  }
+
+  function labelsFor(X, W, rng) {
+    const y = new Int32Array(X.length);
+    for (let i = 0; i < X.length; i++) {
+      const logits = new Float64Array(CFG.k);
+      for (let c = 0; c < CFG.k; c++) {
+        let s = 0;
+        for (let j = 0; j < CFG.d; j++) s += X[i][j] * W[j][c];
+        logits[c] = s;
+      }
+      const p = softmaxRow(logits);
+      let u = rng.next(), acc = 0, lab = CFG.k - 1;
+      for (let c = 0; c < CFG.k; c++) { acc += p[c]; if (u <= acc) { lab = c; break; } }
+      y[i] = lab;
+    }
+    return y;
+  }
+
+  function sample(n, W, rng) {
+    const X = [];
+    for (let i = 0; i < n; i++) {
+      const row = new Float64Array(CFG.d);
+      for (let j = 0; j < CFG.d; j++) row[j] = rng.normal();
+      X.push(row);
+    }
+    return { X, y: labelsFor(X, W, rng) };
+  }
+
+  // Perturbations. Labels come from the LATENT frame: the observation map
+  // changes, the truth does not. (Same decision as the Python benchmark.)
+  function perturb(data, kind, level, params, rng) {
+    const X = data.X.map(r => Float64Array.from(r));
+    let y = Int32Array.from(data.y);
+
+    if (kind === "env_shift") {
+      for (const r of X) for (let j = 0; j < CFG.d; j++) r[j] = (r[j] + level * 1.1 * params.dir[j]) * (1 + 0.2 * level);
+    } else if (kind === "feature_shift") {
+      for (const r of X) for (const j of params.unstable) r[j] = r[j] * (1 + 1.3 * level) + 1.9 * level;
+    } else if (kind === "input_corruption") {
+      for (const r of X) for (let j = 0; j < CFG.d; j++) {
+        r[j] += rng.normal() * 0.85 * level;
+        if (rng.next() < 0.02 * level) r[j] += rng.normal() * 7 * level;
+        if (rng.next() < 0.05 * level) r[j] = NaN;
+      }
+    } else if (kind === "class_shift") {
+      const keep = [];
+      for (let c = 0; c < CFG.k; c++) keep.push(Math.max(0.05, 1 - 0.75 * level * (c / Math.max(CFG.k - 1, 1))));
+      const idx = [];
+      for (let i = 0; i < y.length; i++) if (rng.next() < keep[y[i]]) idx.push(i);
+      const pick = idx.length > 20 ? idx : y.map((_, i) => i);
+      const nX = [], nY = new Int32Array(y.length);
+      for (let i = 0; i < y.length; i++) {
+        const s = pick[rng.int(pick.length)];
+        nX.push(Float64Array.from(X[s])); nY[i] = y[s];
+      }
+      return { X: nX, y: nY };
+    }
+    return { X, y };
+  }
+
+  // ---------- preprocessing ----------
+  function fitScaler(X) {
+    const mean = new Float64Array(CFG.d), std = new Float64Array(CFG.d);
+    for (let j = 0; j < CFG.d; j++) {
+      let s = 0, n = 0;
+      for (const r of X) if (Number.isFinite(r[j])) { s += r[j]; n++; }
+      mean[j] = n ? s / n : 0;
+      let v = 0;
+      for (const r of X) if (Number.isFinite(r[j])) v += (r[j] - mean[j]) ** 2;
+      std[j] = n > 1 ? Math.max(Math.sqrt(v / n), 1e-6) : 1;
+    }
+    return { mean, std };
+  }
+
+  function transform(X, sc, clip) {
+    return X.map(r => {
+      const o = new Float64Array(CFG.d);
+      for (let j = 0; j < CFG.d; j++) {
+        let v = Number.isFinite(r[j]) ? r[j] : sc.mean[j];
+        v = (v - sc.mean[j]) / sc.std[j];
+        if (clip) v = Math.max(-clip, Math.min(clip, v));
+        o[j] = v;
+      }
+      return o;
+    });
+  }
+
+  // ---------- multinomial logistic regression ----------
+  function zeros() {
+    const W = [];
+    for (let j = 0; j <= CFG.d; j++) W.push(new Float64Array(CFG.k));
+    return W;
+  }
+
+  function proba(Z, W) {
+    return Z.map(r => {
+      const logits = new Float64Array(CFG.k);
+      for (let c = 0; c < CFG.k; c++) {
+        let s = W[CFG.d][c];
+        for (let j = 0; j < CFG.d; j++) s += r[j] * W[j][c];
+        logits[c] = s;
+      }
+      return softmaxRow(logits);
+    });
+  }
+
+  function fit(Z, y, epochs, W0, rng) {
+    const W = W0 ? W0.map(r => Float64Array.from(r)) : zeros();
+    const n = Z.length;
+    if (!n) return W;
+    const order = Array.from({ length: n }, (_, i) => i);
+    for (let e = 0; e < epochs; e++) {
+      for (let i = n - 1; i > 0; i--) { const j = rng.int(i + 1); const t = order[i]; order[i] = order[j]; order[j] = t; }
+      const g = zeros();
+      for (const i of order) {
+        const r = Z[i];
+        const logits = new Float64Array(CFG.k);
+        for (let c = 0; c < CFG.k; c++) {
+          let s = W[CFG.d][c];
+          for (let j = 0; j < CFG.d; j++) s += r[j] * W[j][c];
+          logits[c] = s;
+        }
+        const p = softmaxRow(logits);
+        for (let c = 0; c < CFG.k; c++) {
+          const err = p[c] - (y[i] === c ? 1 : 0);
+          for (let j = 0; j < CFG.d; j++) g[j][c] += err * r[j];
+          g[CFG.d][c] += err;
+        }
+      }
+      for (let j = 0; j <= CFG.d; j++) for (let c = 0; c < CFG.k; c++) {
+        // L2 shrinkage keeps the objective strongly convex, so the step size
+        // is bounded and training cannot diverge.
+        W[j][c] -= CFG.lr * (g[j][c] / n + (j < CFG.d ? CFG.l2 * W[j][c] : 0));
+      }
+    }
+    return W;
+  }
+
+  const argmax = p => { let b = 0; for (let i = 1; i < p.length; i++) if (p[i] > p[b]) b = i; return b; };
+
+  function accuracy(Z, y, W) {
+    if (!Z.length) return 0;
+    const P = proba(Z, W);
+    let ok = 0;
+    for (let i = 0; i < y.length; i++) if (argmax(P[i]) === y[i]) ok++;
+    return ok / y.length;
+  }
+
+  function balanced(Z, y, W) {
+    const P = proba(Z, W);
+    let tot = 0, seen = 0;
+    for (let c = 0; c < CFG.k; c++) {
+      let n = 0, ok = 0;
+      for (let i = 0; i < y.length; i++) if (y[i] === c) { n++; if (argmax(P[i]) === c) ok++; }
+      if (n) { tot += ok / n; seen++; }
+    }
+    return seen ? tot / seen : 0;
+  }
+
+  // ---------- diagnosis statistics (ported from src/diagnose.py) ----------
+  const squash = (s, scale) => 1 - Math.exp(-Math.max(s, 0) / Math.max(scale, 1e-9));
+  const clip = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  function colStats(X) {
+    const mean = new Float64Array(CFG.d), std = new Float64Array(CFG.d);
+    let bad = 0, total = 0;
+    for (let j = 0; j < CFG.d; j++) {
+      const vals = [];
+      for (const r of X) { total++; if (Number.isFinite(r[j])) vals.push(r[j]); else bad++; }
+      const n = vals.length;
+      mean[j] = n ? vals.reduce((a, b) => a + b, 0) / n : 0;
+      std[j] = n > 1 ? Math.max(Math.sqrt(vals.reduce((a, b) => a + (b - mean[j]) ** 2, 0) / n), 1e-6) : 1;
+    }
+    return { mean, std, missing: total ? bad / total : 0 };
+  }
+
+  function divergence(ref, cur) {
+    const a = colStats(ref), b = colStats(cur);
+    const out = new Float64Array(CFG.d);
+    for (let j = 0; j < CFG.d; j++) out[j] = Math.abs(b.mean[j] - a.mean[j]) / Math.max(a.std[j], 1e-6);
+    return out;
+  }
+
+  function concentration(div, topK) {
+    const total = div.reduce((a, b) => a + b, 0);
+    if (total <= 1e-9 || CFG.d <= topK) return 0;
+    const top = Array.from(div).sort((x, y) => y - x).slice(0, topK).reduce((a, b) => a + b, 0);
+    const uniform = topK / CFG.d;
+    return clip((top / total - uniform) / (1 - uniform), 0, 1);
+  }
+
+  const median = arr => {
+    if (!arr.length) return 0;
+    const s = Float64Array.from(arr).sort();
+    const m = s.length >> 1;
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  };
+
+  // Extreme RELATIVE TO ITS OWN distribution: this is what separates genuine
+  // spike corruption from a feature that has merely been rescaled.
+  function heavyTail(X) {
+    let hits = 0, seen = 0;
+    for (let j = 0; j < CFG.d; j++) {
+      const vals = [];
+      for (const r of X) if (Number.isFinite(r[j])) vals.push(r[j]);
+      if (!vals.length) continue;
+      const med = median(vals);
+      const mad = Math.max(median(vals.map(v => Math.abs(v - med))) * 1.4826, 1e-6);
+      for (const v of vals) { seen++; if (Math.abs((v - med) / mad) > 5) hits++; }
+    }
+    return seen ? hits / seen : 0;
+  }
+
+  function inflation(ref, cur) {
+    const a = colStats(ref), b = colStats(cur);
+    let s = 0;
+    for (let j = 0; j < CFG.d; j++) s += Math.max(b.std[j] / Math.max(a.std[j], 1e-6) - 1, 0);
+    return s / CFG.d;
+  }
+
+  function priorShift(yA, yB) {
+    const pa = new Float64Array(CFG.k), pb = new Float64Array(CFG.k);
+    for (const v of yA) pa[v]++;
+    for (const v of yB) pb[v]++;
+    let s = 0;
+    for (let c = 0; c < CFG.k; c++) s += Math.abs(pa[c] / yA.length - pb[c] / yB.length);
+    return 0.5 * s;
+  }
+
+  function diagnose(train, pool, gap) {
+    const div = divergence(train.X, pool.X);
+    const meanDiv = div.reduce((a, b) => a + b, 0) / CFG.d;
+    const maxDiv = Math.max(...div);
+    const conc = concentration(div, 2);
+    const miss = colStats(pool.X).missing;
+    const tails = heavyTail(pool.X);
+    const infl = inflation(train.X, pool.X);
+    const priors = priorShift(train.y, pool.y);
+
+    const corrStat = 2.0 * miss + 1.5 * tails + 0.08 * infl;
+
+    let env = squash(meanDiv * (1 - 0.75 * conc), 0.45);
+    env *= clip(1 - 1.5 * corrStat, 0.15, 1);
+
+    const feature = squash(conc, 0.35) * squash(maxDiv, 0.45);
+    const corruption = squash(corrStat, 0.06);
+    const imbalance = squash(priors, 0.12) * clip(1 - 1.6 * meanDiv, 0.05, 1);
+    let overfit = squash(Math.max(gap, 0), 0.18);
+    overfit *= clip(1 - 2.5 * meanDiv, 0.02, 1);
+    overfit *= clip(1 - 2.0 * corrStat, 0.02, 1);
+
+    return {
+      conf: { environment_shift: env, feature_instability: feature, input_corruption: corruption,
+              class_imbalance: imbalance, overfitting: overfit },
+      ev: { meanDiv, conc, miss, tails, priors }
+    };
+  }
+
+  const CAUSE_TO_FAMILY = {
+    environment_shift: "PatchML",
+    feature_instability: "FeatureReweighting",
+    input_corruption: "RobustPreprocessing",
+    class_imbalance: "ClassReweighting",
+    overfitting: "Regularisation"
+  };
+
+  // ---------- NSGA-II (ported from src/nsga2.py) ----------
+  function dominates(oa, va, ob, vb) {
+    if (va <= 0 && vb > 0) return true;
+    if (va > 0 && vb <= 0) return false;
+    if (va > 0 && vb > 0) return va < vb;
+    let le = true, lt = false;
+    for (let i = 0; i < oa.length; i++) { if (oa[i] > ob[i]) le = false; if (oa[i] < ob[i]) lt = true; }
+    return le && lt;
+  }
+
+  function nonDominatedSort(objs, viol) {
+    const n = objs.length, ranks = new Array(n).fill(-1);
+    const domCount = new Array(n).fill(0), domList = Array.from({ length: n }, () => []);
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      if (dominates(objs[i], viol[i], objs[j], viol[j])) { domList[i].push(j); domCount[j]++; }
+      else if (dominates(objs[j], viol[j], objs[i], viol[i])) { domList[j].push(i); domCount[i]++; }
+    }
+    let cur = [];
+    for (let i = 0; i < n; i++) if (domCount[i] === 0) cur.push(i);
+    let r = 0;
+    while (cur.length) {
+      const nxt = [];
+      for (const i of cur) { ranks[i] = r; for (const j of domList[i]) if (--domCount[j] === 0) nxt.push(j); }
+      r++; cur = nxt.sort((a, b) => a - b);
+    }
+    return ranks;
+  }
+
+  function crowding(objs) {
+    const n = objs.length;
+    if (n <= 2) return new Array(n).fill(Infinity);
+    const dist = new Array(n).fill(0);
+    for (let m = 0; m < objs[0].length; m++) {
+      const idx = objs.map((_, i) => i).sort((a, b) => objs[a][m] - objs[b][m]);
+      const span = objs[idx[n - 1]][m] - objs[idx[0]][m];
+      dist[idx[0]] = Infinity; dist[idx[n - 1]] = Infinity;
+      if (span <= 0) continue;
+      for (let i = 1; i < n - 1; i++) dist[idx[i]] += (objs[idx[i + 1]][m] - objs[idx[i - 1]][m]) / span;
+    }
+    return dist;
+  }
+
+  // ---------- PatchML ----------
+  function runPatchML(ctx, onGen) {
+    const { base, sc, train, pool, oodSets, failedScore, seed } = ctx;
+
+    // Shortlist by predictive margin: the samples nearest the displaced
+    // boundary. Uses only the model's own outputs, never labels.
+    const poolZ = transform(pool.X, sc);
+    const P = proba(poolZ, base);
+    const margins = P.map(p => { const s = Array.from(p).sort((a, b) => b - a); return s[0] - (s[1] || 0); });
+    const shortlist = margins.map((m, i) => [m, i]).sort((a, b) => a[0] - b[0])
+      .slice(0, Math.min(CFG.shortlist, pool.X.length)).map(t => t[1]);
+    const nVar = shortlist.length;
+    const maxPatch = Math.max(CFG.minPatch, Math.floor(CFG.maxPatchFrac * pool.X.length));
+
+    const cache = new Map();
+    function evaluate(genome) {
+      const key = genome.join("");
+      if (cache.has(key)) return cache.get(key);
+
+      let chosen = shortlist.filter((_, i) => genome[i] === 1);
+      if (chosen.length < CFG.minPatch) chosen = shortlist.slice(0, CFG.minPatch);
+      chosen = chosen.slice(0, maxPatch);
+
+      const rng = rngFrom(genomeSeed(seed, genome));
+      const rIdx = [];
+      for (let i = 0; i < Math.min(CFG.replay, train.X.length); i++) rIdx.push(rng.int(train.X.length));
+      const X = rIdx.map(i => train.X[i]).concat(chosen.map(i => pool.X[i]));
+      const y = Int32Array.from(rIdx.map(i => train.y[i]).concat(chosen.map(i => pool.y[i])));
+      const W = fit(transform(X, sc), y, CFG.ftEpochs, base, rng);
+
+      const perLevel = oodSets.val.map(s => 0.5 * (accuracy(s.Z, s.y, W) + balanced(s.Z, s.y, W)));
+      const score = perLevel.reduce((a, b) => a + b, 0) / perLevel.length;
+      const mean = score;
+      const sd = Math.sqrt(perLevel.reduce((a, b) => a + (b - mean) ** 2, 0) / perLevel.length);
+      const stability = 1 / (1 + 4 * sd);
+      const size = chosen.length / pool.X.length;
+
+      const objs = [-score, size, Math.log1p(chosen.length * CFG.ftEpochs / 1e4), 1 - stability];
+      const viol = Math.max(0, CFG.minGain - (score - failedScore));
+      const out = { objs, viol, score, size, n: chosen.length, W };
+      cache.set(key, out);
+      return out;
+    }
+
+    // Warm starts: prefix masks over the uncertainty ranking.
+    const rng = rngFrom(seed ^ 0x5F3759DF);
+    let pop = [];
+    for (const kk of [4, 8, 16, 32]) {
+      if (kk <= nVar) pop.push(Array.from({ length: nVar }, (_, i) => (i < kk ? 1 : 0)));
+    }
+    while (pop.length < CFG.pop) pop.push(Array.from({ length: nVar }, () => (rng.next() < 0.12 ? 1 : 0)));
+    pop = pop.slice(0, CFG.pop);
+
+    let evals = pop.map(evaluate);
+    const history = [];
+    const mutP = 1 / nVar;
+
+    for (let g = 0; g < CFG.gens; g++) {
+      let ranks = nonDominatedSort(evals.map(e => e.objs), evals.map(e => e.viol));
+      const cd = new Array(pop.length).fill(0);
+      for (const r of new Set(ranks)) {
+        const idx = ranks.map((v, i) => (v === r ? i : -1)).filter(i => i >= 0);
+        const d = crowding(idx.map(i => evals[i].objs));
+        idx.forEach((i, t) => { cd[i] = d[t]; });
+      }
+      const better = (a, b) => {
+        if (evals[a].viol !== evals[b].viol) return evals[a].viol < evals[b].viol;
+        if (ranks[a] !== ranks[b]) return ranks[a] < ranks[b];
+        return cd[a] > cd[b];
+      };
+      const parents = [];
+      for (let i = 0; i < CFG.pop; i++) {
+        const a = rng.int(pop.length), b = rng.int(pop.length);
+        parents.push(better(a, b) ? a : b);
+      }
+      const kids = [];
+      for (let i = 0; i < CFG.pop; i += 2) {
+        let c1 = pop[parents[i]].slice(), c2 = pop[parents[i + 1] ?? parents[0]].slice();
+        if (rng.next() < 0.9) {
+          for (let j = 0; j < nVar; j++) if (rng.next() < 0.5) { const t = c1[j]; c1[j] = c2[j]; c2[j] = t; }
+        }
+        for (const c of [c1, c2]) for (let j = 0; j < nVar; j++) if (rng.next() < mutP) c[j] = 1 - c[j];
+        kids.push(c1, c2);
+      }
+
+      const merged = pop.concat(kids);
+      const mEvals = evals.concat(kids.map(evaluate));
+      const mRanks = nonDominatedSort(mEvals.map(e => e.objs), mEvals.map(e => e.viol));
+      const keep = [];
+      for (let r = 0; keep.length < CFG.pop && r <= Math.max(...mRanks); r++) {
+        const idx = mRanks.map((v, i) => (v === r ? i : -1)).filter(i => i >= 0);
+        if (keep.length + idx.length <= CFG.pop) { keep.push(...idx); continue; }
+        const d = crowding(idx.map(i => mEvals[i].objs));
+        const order = idx.map((v, t) => [d[t], v]).sort((a, b) => b[0] - a[0]).map(t => t[1]);
+        keep.push(...order.slice(0, CFG.pop - keep.length));
+      }
+      pop = keep.map(i => merged[i]);
+      evals = keep.map(i => mEvals[i]);
+
+      const front = evals.filter((_, i) => nonDominatedSort(evals.map(e => e.objs), evals.map(e => e.viol))[i] === 0);
+      const bestScore = Math.max(...front.map(e => e.score));
+      const smallest = Math.min(...front.map(e => e.n));
+      history.push({ gen: g + 1, front: front.length, bestScore, smallest, evals: cache.size });
+      if (onGen) onGen(history[history.length - 1]);
+    }
+
+    const finalRanks = nonDominatedSort(evals.map(e => e.objs), evals.map(e => e.viol));
+    const feasible = evals.filter((e, i) => finalRanks[i] === 0 && e.viol <= 0);
+    const front = feasible.length ? feasible : evals.filter((_, i) => finalRanks[i] === 0);
+
+    // Knee by normalised weighted Chebyshev, applied only to the finished
+    // front -- never inside the search.
+    const w = [0.6, 0.18, 0.10, 0.12];
+    const lo = w.map((_, m) => Math.min(...front.map(e => e.objs[m])));
+    const hi = w.map((_, m) => Math.max(...front.map(e => e.objs[m])));
+    let best = front[0], bestVal = Infinity;
+    for (const e of front) {
+      let v = 0;
+      for (let m = 0; m < w.length; m++) {
+        const span = hi[m] - lo[m] > 1e-12 ? hi[m] - lo[m] : 1;
+        v += w[m] * (e.objs[m] - lo[m]) / span;
+      }
+      if (v < bestVal) { bestVal = v; best = e; }
+    }
+    return { best, history, nVar, poolSize: pool.X.length };
+  }
+
+  // ---------- UI ----------
+  const $ = id => document.getElementById(id);
+  const fmt = (v, n = 3) => (v === null || v === undefined || Number.isNaN(v) ? "—" : v.toFixed(n));
+
+  const LABELS = [
+    ["environment_shift", "env shift"], ["feature_instability", "feature inst."],
+    ["input_corruption", "corruption"], ["class_imbalance", "imbalance"],
+    ["overfitting", "overfitting"]
+  ];
+
+  function setRows(el, rows) {
+    el.innerHTML = rows.map(([k, v, cls]) =>
+      `<div class="row${cls ? " " + cls : ""}"><span>${k}</span><span>${v}</span></div>`).join("");
+  }
+
+  function paintDx(conf, lead) {
+    $("lab-dx").innerHTML = LABELS
+      .map(([key, label]) => [key, label, conf[key]])
+      .sort((a, b) => b[2] - a[2])
+      .map(([key, label, v]) => `
+        <div class="dx-row${key === lead ? " lead" : ""}">
+          <span>${label}</span>
+          <span class="dx-track"><span class="dx-fill" style="width:${(v * 100).toFixed(1)}%"></span></span>
+          <span class="dx-val">${v.toFixed(2)}</span>
+        </div>`).join("");
+  }
+
+  const wait = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+
+  async function run() {
+    const btn = $("lab-run");
+    btn.disabled = true;
+    const kind = $("lab-scenario").value;
+    const level = parseFloat($("lab-level").value);
+    const seed = parseInt($("lab-seed").value, 10) || 0;
+    const log = $("lab-log");
+    log.innerHTML = "<span class='spin'></span> generating data…";
+    $("lab-s1").textContent = ""; $("lab-s2").textContent = ""; $("lab-s3").textContent = "";
+    await wait();
+
+    // ---- build the scenario ----
+    const rng = rngFrom(seed + 1000);
+    const W = teacher(rng);
+    const params = {
+      dir: Array.from({ length: CFG.d }, () => (rng.next() > 0.5 ? 1 : -1)),
+      unstable: [rng.int(CFG.informative), (rng.int(CFG.informative - 1) + 1) % CFG.informative]
+    };
+    const effective = kind === "control" ? 0 : level;
+
+    const train = sample(CFG.nTrain, W, rng);
+    const val = sample(CFG.nVal, W, rng);
+    const pool = perturb(sample(CFG.nPool, W, rng), kind, effective, params, rng);
+
+    const sc = fitScaler(train.X);
+    const trainZ = transform(train.X, sc);
+    log.innerHTML = "<span class='spin'></span> training the deployed model…";
+    await wait();
+    const base = fit(trainZ, train.y, CFG.epochs, null, rng);
+
+    // ---- stage 1: detect ----
+    const valLevels = CFG.valLevels.map(lv => {
+      const s = perturb(sample(CFG.nOod, W, rng), kind, kind === "control" ? 0 : level * lv, params, rng);
+      return { Z: transform(s.X, sc), y: s.y };
+    });
+    const valZ = transform(val.X, sc);
+    const trainAcc = accuracy(trainZ, train.y, base);
+    const valAcc = accuracy(valZ, val.y, base);
+    const perLevel = valLevels.map(s => accuracy(s.Z, s.y, base));
+    const oodAcc = perLevel.reduce((a, b) => a + b, 0) / perLevel.length;
+
+    // Per-class recall on both sides. A pure prior shift barely moves overall
+    // accuracy -- the majority class absorbs it -- so only this catches it.
+    const valBal = balanced(valZ, val.y, base);
+    const oodBalArr = valLevels.map(s => balanced(s.Z, s.y, base));
+    const oodBal = oodBalArr.reduce((a, b) => a + b, 0) / oodBalArr.length;
+    const balDrop = valBal - oodBal;
+
+    const se = p => Math.sqrt(Math.max(p * (1 - p), 1e-9) / Math.max(CFG.nVal, 1));
+    const sigma = Math.hypot(se(valAcc), se(oodAcc));
+    const thr = Math.max(CFG.noiseSigmas * sigma, CFG.minDrop);
+    const drop = valAcc - oodAcc;
+    const gap = trainAcc - valAcc;
+    const gapThr = Math.max(CFG.gapThresh, CFG.noiseSigmas * Math.hypot(se(trainAcc), se(valAcc)));
+
+    let detected = false;
+    if (drop > thr) detected = true;
+    else if (balDrop > thr) detected = true;
+    else if (gap > gapThr) detected = true;
+
+    $("lab-verdict").className = "verdict " + (detected ? "warn" : "ok");
+    $("lab-verdict").textContent = detected ? "failure detected" : "healthy · no repair";
+    setRows($("lab-symptoms"), [
+      ["train accuracy", fmt(trainAcc)],
+      ["validation accuracy", fmt(valAcc)],
+      ["OOD accuracy", fmt(oodAcc)],
+      ["accuracy drop", fmt(drop), drop > thr ? "flag" : ""],
+      ["balanced-acc drop", fmt(balDrop), balDrop > thr ? "flag" : ""],
+      ["noise threshold", fmt(thr)],
+      ["train/val gap", fmt(gap), gap > gapThr ? "flag" : ""]
+    ]);
+    $("lab-s1").textContent = detected ? "positive" : "negative";
+    $("lab-s2").textContent = "…";
+    await wait();
+
+    // ---- stage 2: diagnose ----
+    const dx = diagnose(train, pool, gap);
+    const ordered = Object.entries(dx.conf).sort((a, b) => b[1] - a[1]);
+    const lead = ordered[0][0];
+    paintDx(dx.conf, detected ? lead : null);
+    setRows($("lab-evidence"), [
+      ["mean divergence", fmt(dx.ev.meanDiv)],
+      ["concentration", fmt(dx.ev.conc)],
+      ["missing rate", fmt(dx.ev.miss)],
+      ["heavy-tail rate", fmt(dx.ev.tails, 4)],
+      ["prior shift", fmt(dx.ev.priors)]
+    ]);
+    $("lab-s2").textContent = detected ? lead.replace(/_/g, " ") : "—";
+    await wait();
+
+    // ---- do no harm ----
+    if (!detected) {
+      $("lab-repair").textContent = "none";
+      $("lab-size").textContent = "0 samples";
+      $("lab-before").textContent = fmt(oodAcc);
+      $("lab-after").textContent = fmt(oodAcc);
+      $("lab-s3").textContent = "skipped";
+      log.innerHTML = "<b>No meaningful degradation.</b>\nThe model is returned untouched and\nzero evaluations are spent.\n\nThis is the do-no-harm path: a system\nthat repairs a healthy model is worse\nthan one that does nothing.";
+      setRows($("lab-final"), [["evaluations spent", "0", "good"], ["model modified", "no", "good"]]);
+      btn.disabled = false;
+      return;
+    }
+
+    // ---- stages 3-5 ----
+    const family = CAUSE_TO_FAMILY[lead];
+    // The submission implements five repair families. This demo ships only
+    // PatchML's search, so when the diagnosis routes elsewhere we say so
+    // plainly rather than labelling PatchML with another family name.
+    const executed = "PatchML";
+    $("lab-repair").innerHTML = family === executed ? family
+      : family + '<span style="display:block;font-size:0.62rem;color:var(--muted);font-weight:400;letter-spacing:0.04em">demo executes PatchML</span>';
+    $("lab-s3").textContent = "evolving";
+    log.textContent = "diagnosis → " + family + "\nsearching…\n";
+    await wait();
+
+    const ctx = { base, sc, train, pool, oodSets: { val: valLevels }, failedScore: 0, seed };
+    ctx.failedScore = valLevels.map(s => 0.5 * (accuracy(s.Z, s.y, base) + balanced(s.Z, s.y, base)))
+      .reduce((a, b) => a + b, 0) / valLevels.length;
+
+    const lines = ["diagnosis → " + family, ""];
+    if (family !== executed) {
+      lines.push("note: this page implements PatchML search only;",
+                 "      the submission runs " + family + " here.", "");
+    }
+    const result = runPatchML(ctx, null);
+    for (const h of result.history) {
+      lines.push(`gen ${String(h.gen).padStart(2)}  front ${String(h.front).padStart(2)}  ` +
+                 `best ${h.bestScore.toFixed(3)}  min |S| ${String(h.smallest).padStart(3)}`);
+      log.textContent = lines.join("\n");
+      log.scrollTop = log.scrollHeight;
+      await wait();
+    }
+
+    // ---- validate on drift levels the search never saw ----
+    const hidden = [0.6, 1.5, 2.0].map(lv => {
+      const s = perturb(sample(CFG.nOod, W, rng), kind, level * lv, params, rng);
+      return { Z: transform(s.X, sc), y: s.y, lv };
+    });
+    const beforeHidden = hidden.map(s => accuracy(s.Z, s.y, base));
+    const afterHidden = hidden.map(s => accuracy(s.Z, s.y, result.best.W));
+    const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+
+    $("lab-size").textContent = `${result.best.n} / ${result.poolSize} samples`;
+    $("lab-before").textContent = fmt(mean(beforeHidden));
+    $("lab-after").textContent = fmt(mean(afterHidden));
+    $("lab-s3").textContent = "done";
+
+    lines.push("", `shortlist  ${result.nVar} of ${result.poolSize} by margin`,
+               `selected   ${result.best.n} samples (${(100 * result.best.size).toFixed(1)}% of pool)`,
+               `evaluations ${result.history[result.history.length - 1].evals}`);
+    log.textContent = lines.join("\n");
+    log.scrollTop = log.scrollHeight;
+
+    setRows($("lab-final"), hidden.map((s, i) => [
+      `hidden level ${s.lv.toFixed(1)}`,
+      `${beforeHidden[i].toFixed(3)} → ${afterHidden[i].toFixed(3)}`,
+      afterHidden[i] > beforeHidden[i] ? "good" : ""
+    ]).concat([["mean gain", (mean(afterHidden) - mean(beforeHidden) >= 0 ? "+" : "") +
+                (mean(afterHidden) - mean(beforeHidden)).toFixed(3),
+                mean(afterHidden) > mean(beforeHidden) ? "good" : "flag"]]));
+    btn.disabled = false;
+  }
+
+  $("lab-level").addEventListener("input", e => { $("lab-levelval").textContent = (+e.target.value).toFixed(1); });
+  $("lab-run").addEventListener("click", () => { run().catch(err => {
+    $("lab-log").textContent = "error: " + err.message;
+    $("lab-run").disabled = false;
+  }); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,986 @@
+# ModelDoctor: Autonomous ML Failure Diagnosis and Evolutionary Repair
+
+## 1. Problem Title
+
+**ModelDoctor — Autonomous Diagnosis and Multi-Objective Evolutionary Repair of Machine Learning Models**
+
+### Core Idea
+
+Machine learning models are usually evaluated under the assumption that the environment in which they operate will remain sufficiently similar to the data on which they were trained. In real-world deployment, this assumption frequently fails. A model can experience sudden or gradual performance degradation because of distribution shifts, noisy or corrupted inputs, feature instability, class imbalance, missing information, overfitting, or changes in the environment.
+
+Most existing ML pipelines can detect that performance has decreased, but they generally require a human engineer to determine **why the model failed and what should be changed to recover its performance**.
+
+ModelDoctor addresses this problem by treating a trained ML model as a system that can be automatically diagnosed and repaired.
+
+The system receives a trained model, its historical/training information, validation data, and data from a changed or perturbed environment. It must:
+
+1. Detect whether the model is failing.
+2. Diagnose the likely cause of failure.
+3. Select an appropriate repair strategy.
+4. Automatically search for an effective repair configuration.
+5. Validate whether the repair genuinely improves generalization.
+6. Minimize the computational and deployment cost of the repair.
+7. Produce an interpretable record explaining what failed, what was changed, and why.
+
+The central principle is:
+
+> **Do not simply find a better model. Determine why the existing model failed and find the smallest effective intervention that restores reliable performance.**
+
+---
+
+# 2. Main Research Question
+
+The central question of ModelDoctor is:
+
+> **Given a trained machine learning model whose performance has degraded under previously unseen conditions, can an automated system determine the likely failure mechanism and evolve a targeted, computationally efficient repair that restores generalization without unnecessarily replacing or retraining the entire model?**
+
+This transforms model optimization from a one-time training problem into an **autonomous diagnosis-and-repair problem**.
+
+---
+
+# 3. ModelDoctor as a Diagnostic System
+
+ModelDoctor should behave conceptually like a medical diagnostic system.
+
+### Patient
+
+The deployed ML model.
+
+### Symptoms
+
+Observable changes such as:
+
+* reduced validation accuracy,
+* increased regression error,
+* increased loss,
+* unstable predictions,
+* increased calibration error,
+* performance differences across sub-populations,
+* sensitivity to perturbations,
+* increased inference cost,
+* degradation on out-of-distribution data.
+
+### Diagnosis
+
+Determine the most likely reason for the degradation.
+
+Possible failure categories include:
+
+* distribution/environment shift,
+* feature instability,
+* noisy or corrupted inputs,
+* class imbalance,
+* overfitting,
+* excessive model complexity,
+* loss-function mismatch,
+* insufficient regularization,
+* unreliable features,
+* changes in feature relationships,
+* data-quality degradation.
+
+### Treatment
+
+Apply a targeted repair rather than blindly rebuilding the model.
+
+Possible repairs include:
+
+* parameter adaptation,
+* regularization adjustment,
+* feature reweighting,
+* data augmentation,
+* loss modification,
+* selective fine-tuning,
+* architecture simplification,
+* sample reweighting,
+* selective retraining,
+* evolutionary hyperparameter adjustment.
+
+### Recovery
+
+The repaired model must demonstrate improved performance on unseen or perturbed validation data while satisfying computational constraints.
+
+---
+
+# 4. The PatchML Subproblem
+
+One of the most important ModelDoctor failure modes is:
+
+## **Environment / Distribution Shift**
+
+The model may have been trained successfully, but the environment in which it operates has changed.
+
+For example:
+
+* sensor characteristics change,
+* user behavior changes,
+* environmental conditions change,
+* data collection procedures change,
+* feature distributions move,
+* previously rare patterns become common,
+* relationships between features and targets change.
+
+Instead of assuming that the entire new dataset must be used for retraining, ModelDoctor introduces a specialized repair module called:
+
+# PatchML — Minimal Data Repair
+
+PatchML addresses the question:
+
+> **If the model failed because the environment changed, what is the smallest subset of newly available data that can repair the model?**
+
+Suppose:
+
+```text
+Original training data
+        ↓
+Original model
+        ↓
+Environment changes
+        ↓
+Model performance decreases
+        ↓
+50,000 new samples become available
+        ↓
+PatchML
+        ↓
+Select only the most useful repair samples
+        ↓
+Fine-tune / retrain
+        ↓
+Recovered model
+```
+
+The objective is not simply to select samples that look unusual.
+
+The selected samples must demonstrate **actual downstream repair value**.
+
+For example:
+
+```text
+Available new data:       50,000 samples
+Selected repair set:         420 samples
+
+Before repair OOD accuracy: 61.4%
+After repair OOD accuracy:  86.8%
+
+Training cost: significantly reduced
+```
+
+The exact numbers would depend on the benchmark.
+
+---
+
+# 5. Overall ModelDoctor Pipeline
+
+The proposed architecture is:
+
+```text
+                  ┌─────────────────────┐
+                  │   Original Model    │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ New / OOD /         │
+                  │ Perturbed Data      │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Failure Detection   │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Failure Diagnosis   │
+                  └──────────┬──────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+        Environment      Data Quality    Model / Loss
+           Shift           Problem         Problem
+              │              │              │
+              ▼              ▼              ▼
+          PatchML       Data Repair     Model Repair
+              │              │              │
+              └──────────────┼──────────────┘
+                             ▼
+                  ┌─────────────────────┐
+                  │ Multi-Objective     │
+                  │ Evolutionary Search │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Candidate Repairs   │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ OOD / Perturbation  │
+                  │ Evaluation          │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Repaired Model      │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Repair Report       │
+                  │ Why + What + Cost   │
+                  └─────────────────────┘
+```
+
+---
+
+# 6. Stage 1 — Failure Detection
+
+ModelDoctor first determines whether the model is actually experiencing a meaningful failure.
+
+The system should compare:
+
+* training performance,
+* standard validation performance,
+* OOD validation performance,
+* perturbation performance,
+* calibration,
+* prediction stability,
+* computational characteristics.
+
+A model should not automatically be considered faulty simply because its performance differs slightly between datasets.
+
+The system should identify **statistically or operationally meaningful degradation**.
+
+Possible indicators include:
+
+* accuracy drop,
+* increase in MAE/MSE,
+* increase in cross-entropy,
+* increase in calibration error,
+* increased prediction variance,
+* increased sensitivity to perturbations,
+* degradation in minority/sub-population performance.
+
+---
+
+# 7. Stage 2 — Failure Diagnosis
+
+After detecting degradation, ModelDoctor must determine the likely cause.
+
+The diagnostic system should compare multiple measurable signatures.
+
+For example:
+
+### Distribution Shift
+
+Possible evidence:
+
+* feature distribution changed,
+* embedding distribution changed,
+* class proportions changed,
+* OOD performance drops significantly,
+* training performance remains relatively stable.
+
+### Data Quality Failure
+
+Possible evidence:
+
+* missing values increase,
+* noise increases,
+* corrupted inputs increase,
+* prediction instability increases.
+
+### Overfitting
+
+Possible evidence:
+
+* training performance remains high,
+* unseen-data performance decreases,
+* model complexity is excessive relative to available data.
+
+### Feature Instability
+
+Possible evidence:
+
+* model relies heavily on features whose distribution changed,
+* removing/reweighting those features improves robustness.
+
+### Class Imbalance
+
+Possible evidence:
+
+* class proportions change,
+* minority-class performance collapses,
+* overall accuracy hides substantial subgroup degradation.
+
+The diagnosis should not merely be a hard-coded label.
+
+It should produce a measurable diagnostic confidence or evidence vector.
+
+Example:
+
+```text
+Environment Shift       0.72
+Feature Instability     0.61
+Class Imbalance         0.24
+Overfitting             0.13
+Input Corruption        0.08
+```
+
+The exact diagnostic representation can be designed according to the benchmark.
+
+---
+
+# 8. Stage 3 — Repair Strategy Selection
+
+Once the likely failure type has been identified, ModelDoctor selects an appropriate family of repairs.
+
+For example:
+
+| Diagnosed problem   | Candidate repair                                     |
+| ------------------- | ---------------------------------------------------- |
+| Environment shift   | PatchML                                              |
+| Feature instability | Feature reweighting                                  |
+| Overfitting         | Regularization / architecture simplification         |
+| Class imbalance     | Sample/class reweighting                             |
+| Input corruption    | Robust preprocessing / augmentation                  |
+| Loss mismatch       | Alternative loss / loss weighting                    |
+| General degradation | Fine-tuning / evolutionary hyperparameter adaptation |
+
+The key principle is:
+
+> **The system should not search the entire repair space blindly when diagnostic evidence can narrow the search space.**
+
+This makes ModelDoctor different from a conventional hyperparameter optimizer.
+
+---
+
+# 9. PatchML — Environment-Shift Repair Module
+
+When ModelDoctor diagnoses environmental or distribution shift, PatchML becomes active.
+
+Assume:
+
+```text
+D_old = original training data
+
+M_old = original trained model
+
+D_new = newly collected data after environmental change
+```
+
+The challenge is to find:
+
+```text
+S ⊂ D_new
+```
+
+such that retraining or fine-tuning using `S` restores performance while:
+
+```text
+|S| << |D_new|
+```
+
+The optimization problem becomes:
+
+$$
+\max \; \text{OOD Recovery}
+$$
+
+while minimizing:
+
+$$
+\text{Repair Dataset Size}
+$$
+
+$$
+\text{Retraining Cost}
+$$
+
+$$
+\text{Inference Cost}
+$$
+
+and optionally minimizing:
+
+$$
+\text{Performance Variance}
+$$
+
+---
+
+# 10. PatchML Representation
+
+A candidate solution can represent which new samples are selected for repair.
+
+For example:
+
+```text
+Candidate A:
+[1, 0, 0, 1, 0, 1, 0, ...]
+
+Candidate B:
+[0, 1, 1, 0, 0, 0, 1, ...]
+```
+
+Each candidate corresponds to a possible repair dataset.
+
+The evolutionary algorithm evaluates the candidate by:
+
+1. constructing the selected repair subset,
+2. fine-tuning or retraining the model,
+3. evaluating the repaired model,
+4. measuring OOD recovery,
+5. measuring selected-data size,
+6. measuring computational cost,
+7. measuring stability.
+
+The evolutionary search then attempts to discover increasingly efficient repair sets.
+
+---
+
+# 11. Multi-Objective Fitness
+
+The ModelDoctor framework should use a multi-objective fitness formulation.
+
+A candidate repair can be evaluated using objectives such as:
+
+### Objective 1 — Generalization Recovery
+
+Maximize performance on unseen/OOD data.
+
+For classification:
+
+$$
+F_1 = Accuracy_{OOD}
+$$
+
+or an appropriate balanced metric.
+
+For regression:
+
+$$
+F_1 = -MAE_{OOD}
+$$
+
+or another suitable error metric.
+
+---
+
+### Objective 2 — Repair Data Efficiency
+
+For PatchML:
+
+$$
+F_2 =
+-\frac{|S|}{|D_{new}|}
+$$
+
+The system should prefer smaller repair sets when recovery is comparable.
+
+---
+
+### Objective 3 — Computational Cost
+
+Minimize:
+
+* retraining time,
+* number of optimization evaluations,
+* memory usage,
+* FLOPs where measurable.
+
+---
+
+### Objective 4 — Inference Cost
+
+The repaired model should not become unnecessarily expensive.
+
+Measure:
+
+* parameter count,
+* inference latency,
+* memory footprint.
+
+---
+
+### Objective 5 — Stability
+
+A repair should not work only on one particular validation split.
+
+Evaluate the repaired model across multiple:
+
+* OOD scenarios,
+* perturbation levels,
+* validation subsets,
+* random seeds where appropriate.
+
+The objective should therefore reward stable improvements rather than a single lucky result.
+
+---
+
+# 12. Pareto-Based Optimization
+
+Rather than reducing all objectives to one arbitrary weighted score, ModelDoctor can maintain a Pareto set.
+
+For example:
+
+```text
+                 OOD Recovery
+                      ↑
+                      │       ●
+                      │    ●
+                      │  ●
+                      │ ●
+                      └────────────────→
+                           Repair Cost
+```
+
+One candidate may achieve higher accuracy using more data.
+
+Another may achieve slightly lower recovery while using dramatically less data.
+
+This allows the evaluator to measure the trade-off directly.
+
+PatchML therefore naturally becomes a multi-objective optimization problem inside the larger ModelDoctor framework.
+
+---
+
+# 13. What Makes ModelDoctor Different From AutoML?
+
+A central requirement of the problem is that ModelDoctor should **not simply behave like generic AutoML**.
+
+Generic AutoML typically asks:
+
+> “Which model/configuration gives the highest validation score?”
+
+ModelDoctor asks:
+
+> “Why did this already-trained model fail, and what targeted intervention can restore its performance under the new conditions?”
+
+The distinction should be enforced by the benchmark.
+
+A solution that simply trains many unrelated models should not receive the same credit as a system that:
+
+1. identifies the failure,
+2. selects an appropriate repair family,
+3. performs targeted optimization,
+4. demonstrates recovery,
+5. minimizes repair cost.
+
+---
+
+# 14. Benchmark Design
+
+The benchmark should contain several independent failure scenarios.
+
+Each scenario begins with a model that performs adequately under its original distribution.
+
+The evaluator then introduces controlled degradation.
+
+Possible scenarios:
+
+### Scenario A — Environment Shift
+
+Change the distribution of input features or environmental conditions.
+
+Expected diagnostic:
+
+```text
+Distribution / environment shift
+```
+
+Expected repair:
+
+```text
+PatchML or another shift-specific adaptation
+```
+
+---
+
+### Scenario B — Feature Shift
+
+Change one or more important feature distributions.
+
+Expected response:
+
+* detect unstable features,
+* reweight or adapt them,
+* restore performance.
+
+---
+
+### Scenario C — Input Corruption
+
+Introduce:
+
+* noise,
+* missing values,
+* perturbations,
+* corrupted measurements.
+
+Expected response:
+
+* detect degradation,
+* identify data-quality failure,
+* apply robust preprocessing/augmentation/reweighting.
+
+---
+
+### Scenario D — Class Distribution Shift
+
+Change class proportions or introduce underrepresented patterns.
+
+Expected response:
+
+* diagnose imbalance,
+* adapt sampling/reweighting,
+* improve minority-class performance.
+
+---
+
+### Scenario E — Overfitting / Generalization Failure
+
+Construct a model that performs strongly on training data but poorly on unseen data.
+
+Expected response:
+
+* identify generalization failure,
+* adjust regularization/model complexity,
+* improve unseen performance.
+
+The benchmark should make the true underlying failure mechanism known to the evaluator while hiding it from the submitted system.
+
+---
+
+# 15. Ground-Truth Diagnosis
+
+To evaluate diagnosis objectively, each benchmark scenario should have a known underlying perturbation.
+
+For example:
+
+```text
+Scenario ID: ENV_SHIFT_03
+
+Hidden cause:
+Feature distribution shift
+
+Perturbation:
+P(X) changed
+
+Target:
+Restore OOD performance
+```
+
+The submitted ModelDoctor does not receive the hidden label.
+
+It must infer the cause from observable evidence.
+
+This allows the evaluator to separately measure:
+
+### Diagnostic quality
+
+and
+
+### Repair quality.
+
+---
+
+# 16. Evaluation Metrics
+
+The evaluator can measure several independent dimensions.
+
+### A. Failure Detection
+
+Did the system correctly identify that the model had degraded?
+
+### B. Diagnosis
+
+Did the system correctly identify the underlying failure category?
+
+### C. Repair Effectiveness
+
+How much did performance improve?
+
+$$
+Recovery =
+\frac{
+Performance_{repaired}-Performance_{failed}
+}{
+Performance_{reference}-Performance_{failed}
+}
+$$
+
+This measures how much of the lost performance was recovered.
+
+---
+
+### D. Repair Efficiency
+
+How much data/computation was required?
+
+For PatchML:
+
+$$
+DataEfficiency =
+\frac{|S|}{|D_{new}|}
+$$
+
+Lower is better when recovery remains high.
+
+---
+
+### E. Stability
+
+Does the repaired model continue to perform under:
+
+* different perturbation strengths,
+* unseen validation splits,
+* multiple OOD scenarios?
+
+---
+
+### F. Deployment Cost
+
+Measure:
+
+* parameter count,
+* inference latency,
+* memory,
+* computational cost.
+
+---
+
+### G. Explainability
+
+Evaluate whether the system produces a structured repair report containing:
+
+```text
+Failure detected:
+YES
+
+Likely cause:
+Environment shift
+
+Evidence:
+Feature distribution divergence
+OOD degradation
+Prediction instability
+
+Repair selected:
+PatchML
+
+Repair set size:
+X samples
+
+Before:
+X
+
+After:
+Y
+
+Repair cost:
+Z
+```
+
+---
+
+# 17. Robustness Requirement
+
+A repair should not merely memorize the benchmark's particular perturbation.
+
+The evaluator should include hidden perturbation levels and unseen combinations.
+
+For example:
+
+```text
+Training scenario:
+10% distribution shift
+
+Hidden evaluation:
+15% shift
+25% shift
+mixed shift
+```
+
+This tests whether ModelDoctor learned a general repair strategy rather than overfitting to one known perturbation.
+
+---
+
+# 18. Three-Attempt Competition Progression
+
+The three attempts can represent increasingly sophisticated versions of the same system.
+
+## Attempt 1 — Baseline ModelDoctor
+
+Implement:
+
+```text
+failure detection
++
+basic diagnosis
++
+basic evolutionary repair
+```
+
+PatchML can initially use a relatively simple evolutionary sample-selection mechanism.
+
+---
+
+## Attempt 2 — Shift-Aware ModelDoctor
+
+Improve the diagnostic layer.
+
+For environment shift:
+
+```text
+distribution analysis
++
+feature-level shift detection
++
+PatchML
++
+multi-objective optimization
+```
+
+For other failure types, narrow the repair search space based on diagnosis.
+
+---
+
+## Attempt 3 — Full Multi-Objective ModelDoctor
+
+The final system should jointly optimize:
+
+```text
+diagnostic correctness
++
+OOD recovery
++
+repair data efficiency
++
+training cost
++
+inference latency
++
+stability
++
+model complexity
+```
+
+The final version should produce a complete machine-readable repair report.
+
+---
+
+# 19. Required Output of the System
+
+For every test case, ModelDoctor should produce a structured result such as:
+
+```json
+{
+  "failure_detected": true,
+  "diagnosis": {
+    "environment_shift": 0.81,
+    "feature_instability": 0.54,
+    "class_imbalance": 0.17,
+    "overfitting": 0.09
+  },
+  "selected_repair": "PatchML",
+  "repair_data_fraction": 0.008,
+  "performance_before": 0.614,
+  "performance_after": 0.867,
+  "ood_recovery": 0.91,
+  "parameter_change": 0.04,
+  "training_cost": 1.37,
+  "inference_latency": 8.2,
+  "stability": 0.89
+}
+```
+
+The exact schema can be adapted to the competition's submission format.
+
+---
+
+# 20. Core Research Contribution
+
+The central contribution of ModelDoctor is not simply another evolutionary optimizer.
+
+The proposed contribution is an **autonomous closed-loop system**:
+
+$$
+\boxed{
+Detect
+\rightarrow
+Diagnose
+\rightarrow
+Select\ Repair
+\rightarrow
+Evolve
+\rightarrow
+Validate
+}
+$$
+
+with the ability to select different repair mechanisms depending on the diagnosed failure.
+
+PatchML is one specialized branch of this system:
+
+$$
+\boxed{
+Environment\ Shift
+\rightarrow
+Minimal\ Data\ Patch
+\rightarrow
+Targeted\ Adaptation
+}
+$$
+
+This gives the overall system a hierarchical structure rather than treating every model failure as the same optimization problem.
+
+---
+
+# 21. Key Design Principle
+
+The most important design rule is:
+
+> **ModelDoctor should optimize interventions, not simply models.**
+
+A successful solution should therefore answer three questions:
+
+### WHY did the model fail?
+
+### WHAT intervention should be applied?
+
+### HOW little computation/data/change is required to restore reliable performance?
+
+PatchML provides a particularly strong answer to the third question when the diagnosis is environmental or distribution shift.
+
+---
+
+# 22. Final Problem Statement
+
+### ModelDoctor
+
+Design an autonomous machine learning system capable of detecting, diagnosing, and repairing model failures under distributional, environmental, data-quality, and generalization changes.
+
+Given a trained model and previously unseen or perturbed data, the system must determine whether the model has experienced meaningful degradation, infer the most likely failure mechanism from observable evidence, select an appropriate repair strategy, and use multi-objective evolutionary optimization to discover an effective and computationally efficient intervention.
+
+The repaired model must demonstrate improved performance on hidden OOD and perturbation scenarios while maintaining low inference cost, low repair cost, stable behavior, and limited unnecessary modification.
+
+When the diagnosed failure is caused by an environmental or distribution shift, the system should activate **PatchML**, a specialized repair mechanism that searches for the smallest useful subset of newly available data required to restore model performance rather than retraining indiscriminately on the entire new dataset.
+
+The final system should therefore optimize not only predictive performance but also:
+
+* diagnostic correctness,
+* OOD generalization,
+* repair efficiency,
+* data efficiency,
+* computational cost,
+* inference latency,
+* parameter efficiency,
+* stability across perturbations,
+* and architectural/repair explainability.
+
+The ultimate goal is to create a machine learning system that behaves less like a static trained model and more like an autonomous **ML doctor**:
+
+> **Observe the symptoms → determine why the model failed → choose the appropriate treatment → find an efficient repair → verify that the model has recovered.**
