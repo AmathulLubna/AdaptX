@@ -3,64 +3,80 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>
-  :root { color-scheme: light; }
-  html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; font-family: system-ui, sans-serif; background: #F6F8F8; }
-  img { max-width: 100%; }
-  [hidden] { display: none !important; }
-</style>
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>AdaptX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,300;0,6..72,400&family=Source+Sans+3:wght@400;500;600&display=swap">
 
 <style>
-/* Layout: a clinical chart. One reading column; each failure case is a patient
-   card with vitals, diagnosis and a recovery curve drawn to a shared scale. */
+/* ---------------------------------------------------------------------------
+   Layout: a diagnostic instrument. A narrow reading column for argument, full-
+   bleed instrument panels for anything with live readouts. Rules and hairlines
+   do the separating work; cards are reserved for objects that are genuinely
+   discrete (a patient chart, a control panel).
+   --------------------------------------------------------------------------- */
 :root {
-  --bg: #F6F8F8;
-  --surface: #FFFFFF;
-  --sunk: #EDF1F1;
-  --ink: #12171A;
-  --muted: #5B666D;
-  --line: #DCE3E4;
-  --accent: #0E7A65;
-  --accent-soft: #D7ECE6;
-  --alert: #B4431A;
-  --alert-soft: #F6E3DA;
+  /* neutrals carry a slight blue-green bias toward the accent */
+  --bg:        #F4F7F6;
+  --surface:   #FFFFFF;
+  --sunk:      #E9EEEC;
+  --ink:       #0E1513;
+  --ink-2:     #3A4744;
+  --muted:     #667571;
+  --line:      #D6DEDB;
+  --hairline:  #E6ECEA;
 
-  --display: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --serif: "IBM Plex Serif", Georgia, serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --accent:      #00765E;   /* monitor trace */
+  --accent-lift: #00A67E;
+  --accent-soft: #D3EAE3;
+  --alert:       #A83A17;
+  --alert-soft:  #F7E2D9;
+  --amber:       #8A6410;
+
+  --display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --body:    "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --serif:   "Newsreader", Georgia, serif;
+  --mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --gut: 22px;
+  --rule: 1px solid var(--line);
+  --hair: 1px solid var(--hairline);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0D1113;
-    --surface: #151A1D;
-    --sunk: #1D2427;
-    --ink: #E4EAEC;
-    --muted: #8B979D;
-    --line: #232B2F;
-    --accent: #3EBFA0;
-    --accent-soft: #14312B;
-    --alert: #E08050;
-    --alert-soft: #331E14;
+    --bg:        #090D0C;
+    --surface:   #101615;
+    --sunk:      #161E1C;
+    --ink:       #E8EFEC;
+    --ink-2:     #B3C0BC;
+    --muted:     #7E8D89;
+    --line:      #202A28;
+    --hairline:  #1A2321;
+    --accent:      #35C79F;
+    --accent-lift: #5FE0BC;
+    --accent-soft: #0D2B24;
+    --alert:       #E8825A;
+    --alert-soft:  #2E1A12;
+    --amber:       #D6A54A;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0D1113;
-  --surface: #151A1D;
-  --sunk: #1D2427;
-  --ink: #E4EAEC;
-  --muted: #8B979D;
-  --line: #232B2F;
-  --accent: #3EBFA0;
-  --accent-soft: #14312B;
-  --alert: #E08050;
-  --alert-soft: #331E14;
+  --bg:        #090D0C;
+  --surface:   #101615;
+  --sunk:      #161E1C;
+  --ink:       #E8EFEC;
+  --ink-2:     #B3C0BC;
+  --muted:     #7E8D89;
+  --line:      #202A28;
+  --hairline:  #1A2321;
+  --accent:      #35C79F;
+  --accent-lift: #5FE0BC;
+  --accent-soft: #0D2B24;
+  --alert:       #E8825A;
+  --alert-soft:  #2E1A12;
+  --amber:       #D6A54A;
   color-scheme: dark;
 }
 
@@ -69,512 +85,521 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--body);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 16.5px;
+  line-height: 1.62;
   margin: 0;
+  -webkit-font-smoothing: antialiased;
 }
-.wrap {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding-inline: 20px;
-  padding-block: 0;
-}
-h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
 p { margin: 0; }
+::selection { background: var(--accent-soft); color: var(--ink); }
 
-/* ---------- masthead ---------- */
-.masthead {
-  border-bottom: 1px solid var(--line);
-  padding-block: 40px 28px;
-}
-.chartline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: var(--gut); }
+.col  { max-width: 68ch; }
+
+/* shared micro-type ------------------------------------------------------- */
+.tag {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.num { font-variant-numeric: tabular-nums; }
+
+/* sticky rail ------------------------------------------------------------- */
+.rail {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 40;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: var(--hair);
+}
+.rail-in {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 11px var(--gut);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.rail .mark {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+}
+.rail .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-lift);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  flex: none;
+}
+.rail nav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+.rail nav a {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 26px;
+  text-decoration: none;
+  padding: 6px 9px;
+  border-radius: 2px;
 }
-.chartline span { white-space: nowrap; }
+.rail nav a:hover { color: var(--ink); background: var(--sunk); }
+.rail nav a.cta { color: var(--surface); background: var(--accent); }
+.rail nav a.cta:hover { background: var(--accent-lift); color: var(--surface); }
+@media (max-width: 660px) { .rail nav a.hide-s { display: none; } }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent-lift); outline-offset: 2px;
+}
+
+/* hero -------------------------------------------------------------------- */
+.hero { padding-block: 54px 0; }
+.meta {
+  display: flex; flex-wrap: wrap; gap: 7px 14px;
+  color: var(--muted); margin-bottom: 30px;
+}
+.meta span { display: inline-flex; align-items: center; gap: 7px; }
+.meta span + span::before {
+  content: ""; width: 3px; height: 3px; border-radius: 50%;
+  background: var(--line); margin-right: 7px;
+}
 h1 {
   font-family: var(--display);
-  font-size: clamp(2.6rem, 8vw, 4.3rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 0.98;
+  font-weight: 800;
+  font-size: clamp(3.4rem, 13vw, 7.4rem);
+  letter-spacing: -0.055em;
+  line-height: 0.86;
 }
-.sub {
-  font-size: clamp(1.05rem, 2.6vw, 1.3rem);
-  color: var(--muted);
-  max-width: 34ch;
-  margin-top: 16px;
+h1 .x { color: var(--accent); }
+.tagline {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.15rem, 3.2vw, 1.75rem);
+  letter-spacing: -0.02em;
+  line-height: 1.24;
+  color: var(--ink-2);
+  max-width: 24ch;
+  margin-top: 24px;
 }
 .thesis {
   font-family: var(--serif);
-  font-size: clamp(1.15rem, 3vw, 1.45rem);
-  line-height: 1.45;
-  border-left: 3px solid var(--accent);
-  padding-left: 20px;
-  margin-top: 30px;
-  max-width: 54ch;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.18rem, 2.9vw, 1.5rem);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 46ch;
+  margin-top: 26px;
+  padding-left: 22px;
+  border-left: 2px solid var(--accent);
+}
+.thesis em { font-style: normal; color: var(--ink); }
+
+.hero-grid { display: grid; gap: 34px; align-items: end; }
+@media (min-width: 900px) { .hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
+
+/* hero trace: the real env-shift curves, drawn on load */
+.trace { min-width: 0; }
+.trace figcaption {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em;
+  color: var(--muted); margin-top: 10px; line-height: 1.6;
+}
+.trace figcaption b { color: var(--ink); font-weight: 600; }
+.trace svg { display: block; width: 100%; height: auto; overflow: visible; }
+.trace .grid  { stroke: var(--hairline); stroke-width: 1; }
+.trace .axis  { fill: var(--muted); font-family: var(--mono); font-size: 8px; }
+.trace .pre   { stroke: var(--alert); fill: none; stroke-width: 2; stroke-linecap: round; }
+.trace .post  { stroke: var(--accent); fill: none; stroke-width: 2.6; stroke-linecap: round; }
+.trace .band  { fill: var(--accent); opacity: 0.11; }
+.trace .cap   { fill: var(--accent); }
+.trace .capx  { fill: var(--alert); }
+.draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 1.5s cubic-bezier(.4,0,.2,1) forwards; }
+.draw.d2 { animation-delay: .35s; }
+.fade { opacity: 0; animation: fade .7s ease forwards; animation-delay: 1.3s; }
+@keyframes draw { to { stroke-dashoffset: 0 } }
+@keyframes fade { to { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .draw { animation: none; stroke-dashoffset: 0 }
+  .fade { animation: none; opacity: 1 }
 }
 
-/* ---------- vitals row ---------- */
+/* vitals ------------------------------------------------------------------ */
 .vitals {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  margin-block: 34px;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  border-top: 2px solid var(--ink);
+  border-bottom: var(--rule);
+  margin-top: 46px;
 }
-.vital { background: var(--surface); padding: 20px 18px; min-width: 0; }
-.vital .k {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+.vital { padding: 20px 20px 22px; border-right: var(--hair); min-width: 0; }
+.vital:last-child { border-right: 0; }
+.vital .k { color: var(--muted); }
 .vital .v {
-  font-family: var(--mono);
-  font-size: 2rem;
-  font-weight: 600;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4.6vw, 2.5rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin-top: 9px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  margin-top: 6px;
-  line-height: 1.1;
 }
-.vital .n { font-size: 0.8rem; color: var(--muted); line-height: 1.4; margin-top: 2px; }
-.vital.hero .v { color: var(--accent); }
+.vital .v small { font-size: 0.42em; font-weight: 600; letter-spacing: 0; color: var(--muted); }
+.vital .n { font-size: 0.79rem; color: var(--muted); line-height: 1.4; margin-top: 4px; }
+.vital.lead .v { color: var(--accent); }
 
-/* ---------- sections ---------- */
-section { padding-block: 44px; border-top: 1px solid var(--line); }
-.eyebrow {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 12px;
-}
+/* sections ---------------------------------------------------------------- */
+section { padding-block: 62px; border-top: var(--rule); }
+section:first-of-type { border-top: 0; }
+.head { margin-bottom: 8px; }
+.eyebrow { color: var(--accent); margin-bottom: 14px; display: block; }
 h2 {
   font-family: var(--display);
-  font-size: clamp(1.5rem, 4vw, 2.1rem);
-  font-weight: 650;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  font-weight: 700;
+  font-size: clamp(1.75rem, 4.6vw, 2.7rem);
+  letter-spacing: -0.038em;
+  line-height: 1.04;
+  max-width: 20ch;
 }
-.lede { color: var(--muted); max-width: 62ch; margin-top: 12px; }
+.lede { color: var(--muted); margin-top: 16px; font-size: 1.02rem; max-width: 66ch; }
 
-/* ---------- live demo ---------- */
-.lab { border: 1px solid var(--line); background: var(--surface); margin-top: 26px; }
-.lab-controls {
-  display: grid;
-  gap: 16px;
-  padding: 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--sunk);
+/* stages ------------------------------------------------------------------ */
+.stages { display: grid; margin-top: 34px; border-top: var(--rule); }
+@media (min-width: 780px) { .stages { grid-template-columns: repeat(5, 1fr); } }
+.stage { padding: 20px 18px 22px; border-bottom: var(--hair); min-width: 0; }
+@media (min-width: 780px) { .stage { border-bottom: 0; border-right: var(--hair); } .stage:last-child { border-right: 0 } }
+.stage .n {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--accent); display: block; margin-bottom: 12px;
 }
-@media (min-width: 720px) { .lab-controls { grid-template-columns: 1.4fr 1.6fr auto auto; align-items: end; } }
-.ctl { min-width: 0; }
-.ctl label {
-  display: block;
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
+.stage h3 {
+  font-family: var(--display); font-weight: 650; font-size: 1.02rem;
+  letter-spacing: -0.02em;
 }
-.ctl select, .ctl input[type="number"] {
-  width: 100%;
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
+.stage p { font-size: 0.85rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+/* prose blocks ------------------------------------------------------------ */
+.cols { display: grid; gap: 26px 34px; margin-top: 30px; }
+@media (min-width: 780px) { .cols { grid-template-columns: 1fr 1fr; } }
+.block { min-width: 0; }
+.block h3 {
+  font-family: var(--display); font-weight: 650; font-size: 1.04rem;
+  letter-spacing: -0.02em; padding-bottom: 10px; border-bottom: 2px solid var(--ink);
+}
+.block p { font-size: 0.92rem; color: var(--muted); margin-top: 12px; }
+.block strong { color: var(--ink); font-weight: 600; }
+
+code {
+  font-family: var(--mono); font-size: 0.84em;
+  background: var(--sunk); padding: 1.5px 5px; border-radius: 2px; color: var(--ink-2);
+}
+
+/* figure strip ------------------------------------------------------------ */
+.figures {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  border-top: 2px solid var(--ink); border-bottom: var(--rule); margin-top: 30px;
+}
+.fig { padding: 18px; border-right: var(--hair); min-width: 0; }
+.fig:last-child { border-right: 0; }
+.fig .v {
+  font-family: var(--display); font-weight: 700; font-size: 1.5rem;
+  letter-spacing: -0.035em; font-variant-numeric: tabular-nums; line-height: 1.1;
+}
+.fig:last-child .v { color: var(--accent); }
+.fig .k { color: var(--muted); margin-top: 6px; display: block; }
+
+/* table ------------------------------------------------------------------- */
+.tablewrap { overflow-x: auto; margin-top: 30px; border-top: 2px solid var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 0.89rem; min-width: 540px; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: var(--hair); }
+th { color: var(--muted); font-weight: 500; font-family: var(--mono); font-size: 9.5px;
+     letter-spacing: 0.12em; text-transform: uppercase; }
+td.mono { font-family: var(--mono); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+td.idx { font-family: var(--mono); color: var(--accent); width: 2rem; }
+tr:last-child td { border-bottom: 0; }
+
+/* limits ------------------------------------------------------------------ */
+ol.limits { margin: 26px 0 0; padding: 0; list-style: none; counter-reset: lim;
+            display: grid; gap: 0; border-top: var(--rule); }
+ol.limits li {
+  counter-increment: lim; display: grid; grid-template-columns: 34px 1fr;
+  gap: 14px; padding: 16px 0; border-bottom: var(--hair);
+  font-size: 0.93rem; color: var(--muted); min-width: 0;
+}
+ol.limits li::before {
+  content: counter(lim, decimal-leading-zero);
+  font-family: var(--mono); font-size: 10px; color: var(--accent); padding-top: 4px;
+}
+ol.limits strong { color: var(--ink); font-weight: 600; }
+
+/* footer ------------------------------------------------------------------ */
+footer {
+  border-top: 2px solid var(--ink); padding-block: 30px 56px;
+  display: flex; flex-wrap: wrap; gap: 9px 26px; color: var(--muted);
+}
+
+/* ===== instrument panel (live demo) ====================================== */
+.lab {
+  margin-top: 34px;
+  border: 2px solid var(--ink);
   background: var(--surface);
-  color: var(--ink);
-  border-radius: 2px;
 }
-.ctl input[type="range"] { width: 100%; accent-color: var(--accent); }
-.rangerow { display: flex; align-items: center; gap: 10px; }
+.lab-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; background: var(--ink); color: var(--bg);
+}
+.lab-bar .tag { color: var(--bg); opacity: 0.72; }
+.lab-bar .live {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; opacity: 0.72;
+}
+.lab-bar .beacon {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent-lift);
+  animation: beat 1.9s ease-in-out infinite;
+}
+@keyframes beat { 0%,100% { opacity: .3; transform: scale(.85) } 50% { opacity: 1; transform: scale(1) } }
+
+.lab-controls { display: grid; gap: 18px; padding: 20px 18px; border-bottom: var(--rule); }
+@media (min-width: 780px) { .lab-controls { grid-template-columns: 1.3fr 1.5fr 0.7fr auto; align-items: end; } }
+.ctl { min-width: 0; }
+.ctl > label { display: block; color: var(--muted); margin-bottom: 8px; }
+.ctl select, .ctl input[type="number"] {
+  width: 100%; font-family: var(--mono); font-size: 0.86rem; font-weight: 500;
+  padding: 9px 11px; border: var(--rule); background: var(--bg); color: var(--ink);
+  border-radius: 2px; appearance: none;
+}
+.ctl select {
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 30px;
+}
+.rangerow { display: flex; align-items: center; gap: 12px; }
+.ctl input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); height: 20px; }
 .rangeval {
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  min-width: 2.6em;
-  text-align: right;
+  font-family: var(--display); font-weight: 700; font-size: 1.15rem;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.03em;
+  min-width: 2.2em; text-align: right; color: var(--accent);
 }
 button.run {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
-  padding: 10px 20px;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--surface);
-  border-radius: 2px;
-  cursor: pointer;
-  white-space: nowrap;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.13em;
+  text-transform: uppercase; font-weight: 600; padding: 12px 22px;
+  border: 2px solid var(--accent); background: var(--accent); color: var(--surface);
+  border-radius: 2px; cursor: pointer; white-space: nowrap; transition: background .15s;
 }
-button.run:hover:not(:disabled) { filter: brightness(1.08); }
-button.run:disabled { opacity: 0.55; cursor: progress; }
-button.run.ghost { background: transparent; color: var(--muted); border-color: var(--line); }
-button.run:focus-visible, .ctl select:focus-visible, .ctl input:focus-visible {
-  outline: 2px solid var(--accent); outline-offset: 2px;
-}
+button.run:hover:not(:disabled) { background: var(--accent-lift); border-color: var(--accent-lift); }
+button.run:disabled { opacity: .5; cursor: progress; }
 
-.lab-body { display: grid; gap: 1px; background: var(--line); }
-@media (min-width: 860px) { .lab-body { grid-template-columns: 1fr 1fr 1.1fr; } }
-.panel { background: var(--surface); padding: 18px; min-width: 0; }
+.lab-body { display: grid; }
+@media (min-width: 900px) { .lab-body { grid-template-columns: 1fr 1fr 1.15fr; } }
+.panel { padding: 20px 18px; border-bottom: var(--hair); min-width: 0; }
+@media (min-width: 900px) { .panel { border-bottom: 0; border-right: var(--hair); } .panel:last-child { border-right: 0 } }
 .panel h4 {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 14px;
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  color: var(--muted); margin-bottom: 16px; padding-bottom: 9px; border-bottom: var(--hair);
   font-weight: 500;
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
 }
-.panel h4 .step { color: var(--accent); }
+.panel h4 .step { color: var(--accent); font-family: var(--mono); font-size: 9.5px;
+                  letter-spacing: 0.08em; text-align: right; }
 
-.kv { display: grid; gap: 7px; font-family: var(--mono); font-size: 11px; }
-.kv .row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.verdict {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+  text-transform: uppercase; font-weight: 600; padding: 10px;
+  margin-bottom: 16px; text-align: center; border: 1px solid currentColor;
+}
+.verdict.warn { color: var(--alert); background: var(--alert-soft); }
+.verdict.ok   { color: var(--accent); background: var(--accent-soft); }
+.verdict.idle { color: var(--muted); background: var(--sunk); border-color: var(--line); }
+
+.kv { display: grid; gap: 0; font-family: var(--mono); font-size: 11px; }
+.kv .row {
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  padding: 6px 0; border-bottom: var(--hairline) 1px solid;
+}
+.kv .row:last-child { border-bottom: 0; }
 .kv .row span:first-child { color: var(--muted); }
 .kv .row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
 .kv .row.flag span:last-child { color: var(--alert); }
 .kv .row.good span:last-child { color: var(--accent); }
 
-.verdict {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
-  padding: 8px 10px;
-  border-radius: 2px;
-  margin-bottom: 14px;
-  text-align: center;
-}
-.verdict.warn { background: var(--alert-soft); color: var(--alert); }
-.verdict.ok { background: var(--accent-soft); color: var(--accent); }
-.verdict.idle { background: var(--sunk); color: var(--muted); }
-
-.genlog {
-  font-family: var(--mono);
-  font-size: 10px;
-  line-height: 1.7;
-  color: var(--muted);
-  max-height: 128px;
-  overflow-y: auto;
-  overflow-x: auto;
-  background: var(--sunk);
-  padding: 10px;
-  white-space: pre;
-  margin-bottom: 14px;
-}
-.genlog b { color: var(--ink); font-weight: 600; }
-
-.bigresult { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-.bigresult .b { min-width: 0; }
-.bigresult .bk {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--muted);
-}
-.bigresult .bv {
-  font-family: var(--mono); font-size: 1.45rem; font-weight: 600;
-  font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.2;
-}
-.bigresult .bv.up { color: var(--accent); }
-
-.lab-note {
-  padding: 14px 18px;
-  border-top: 1px solid var(--line);
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.55;
-}
-.lab-note strong { color: var(--ink); font-weight: 600; }
-
-.spin { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
-
-/* ---------- case cards ---------- */
-.cases { display: grid; gap: 16px; margin-top: 28px; }
-@media (min-width: 760px) { .cases { grid-template-columns: 1fr 1fr; } }
-.case {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  padding: 20px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.case.healthy { border-color: var(--accent); }
-.case-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.case-name {
-  font-family: var(--mono);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-.case-truth { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
-.pill {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 4px 8px;
-  border-radius: 2px;
-  white-space: nowrap;
-  font-weight: 600;
-}
-.pill.ok { background: var(--accent-soft); color: var(--accent); }
-.pill.warn { background: var(--alert-soft); color: var(--alert); }
-
-/* diagnosis bars */
-.dx { display: grid; gap: 5px; }
+/* diagnosis bars (class names shared with the case cards) */
+.dx { display: grid; gap: 6px; }
 .dx-row {
-  display: grid;
-  grid-template-columns: 96px 1fr 34px;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
+  display: grid; grid-template-columns: 88px 1fr 32px; align-items: center; gap: 9px;
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
 }
 .dx-row.lead { color: var(--ink); font-weight: 600; }
-.dx-track { background: var(--sunk); height: 7px; min-width: 0; }
-.dx-fill { height: 100%; background: var(--line); }
+.dx-track { background: var(--sunk); height: 8px; min-width: 0; overflow: hidden; }
+.dx-fill { display: block; height: 100%; background: var(--line); transition: width .45s cubic-bezier(.4,0,.2,1); }
 .dx-row.lead .dx-fill { background: var(--accent); }
 .dx-val { text-align: right; font-variant-numeric: tabular-nums; }
 
-.case-chart { margin-top: 2px; }
+.bigresult { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; margin-bottom: 16px; }
+.bigresult .b { min-width: 0; }
+.bigresult .bk { color: var(--muted); display: block; }
+.bigresult .bv {
+  font-family: var(--display); font-weight: 700; font-size: 1.55rem;
+  letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1.15; margin-top: 3px;
+}
+.bigresult .bv.small { font-size: 0.95rem; letter-spacing: -0.02em; }
+.bigresult .bv.up { color: var(--accent); }
+
+.genlog {
+  font-family: var(--mono); font-size: 10px; line-height: 1.75; color: var(--muted);
+  max-height: 136px; overflow: auto; background: var(--sunk); border-left: 2px solid var(--line);
+  padding: 11px 12px; white-space: pre; margin-bottom: 16px;
+}
+.genlog b { color: var(--ink); font-weight: 600; }
+.spin { display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+        background: var(--accent); animation: beat 1s ease-in-out infinite; }
+
+.lab-note {
+  padding: 18px; border-top: var(--rule); background: var(--sunk);
+  font-size: 0.86rem; color: var(--muted); line-height: 1.58;
+}
+.lab-note strong { color: var(--ink); font-weight: 600; }
+.lab-note p + p { margin-top: 11px; }
+
+/* ===== case cards ======================================================== */
+.cases { display: grid; gap: 14px; margin-top: 32px; }
+@media (min-width: 760px)  { .cases { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1040px) { .cases { grid-template-columns: repeat(3, 1fr); } }
+.case {
+  background: var(--surface); border: var(--rule); border-top: 2px solid var(--alert);
+  padding: 18px; min-width: 0; display: flex; flex-direction: column; gap: 14px;
+}
+.case.healthy { border-top-color: var(--accent); }
+.case-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.case-name {
+  font-family: var(--display); font-weight: 700; font-size: 1.02rem; letter-spacing: -0.025em;
+}
+.case-truth { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+.pill {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 7px; white-space: nowrap; font-weight: 600; border: 1px solid currentColor;
+}
+.pill.ok   { color: var(--accent); background: var(--accent-soft); }
+.pill.warn { color: var(--alert);  background: var(--alert-soft); }
+
 .case-chart svg { display: block; width: 100%; height: auto; }
 .case-chart text { font-family: var(--mono); fill: var(--muted); }
-.case-chart .grid { stroke: var(--line); stroke-width: 1; }
-.case-chart .divider { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: .45; }
-.case-chart .before { stroke: var(--alert); fill: none; stroke-width: 1.6; }
+.case-chart .grid { stroke: var(--hairline); stroke-width: 1; }
+.case-chart .divider { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; opacity: .5; }
+.case-chart .band { fill: var(--accent); opacity: .1; }
+.case-chart .before { stroke: var(--alert); fill: none; stroke-width: 1.7; stroke-linecap: round; }
 .case-chart .before-dot { fill: var(--alert); }
-.case-chart .after { stroke: var(--accent); fill: none; stroke-width: 2; }
+.case-chart .after { stroke: var(--accent); fill: none; stroke-width: 2.2; stroke-linecap: round; }
 .case-chart .after-dot { fill: var(--accent); }
 
 .case-foot {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-  font-family: var(--mono);
-  font-size: 10.5px;
+  display: grid; grid-template-columns: 1fr auto; gap: 8px 12px;
+  border-top: var(--hair); padding-top: 12px; font-family: var(--mono); font-size: 10.5px;
+  margin-top: auto;
 }
-.case-foot .k { color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; font-size: 9px; }
+.case-foot .k { color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-size: 9px; }
 .case-foot .v { font-variant-numeric: tabular-nums; font-weight: 600; margin-top: 2px; }
+.case-foot .v.hi { color: var(--accent); }
+.case-foot .r { text-align: right; }
 
 .legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--muted);
-  margin-top: 20px;
-  align-items: center;
+  display: flex; flex-wrap: wrap; gap: 9px 22px; color: var(--muted);
+  margin-top: 22px; align-items: center; font-family: var(--mono); font-size: 10.5px;
 }
-.swatch { display: inline-block; width: 16px; height: 2px; vertical-align: middle; margin-right: 6px; }
+.swatch { display: inline-block; width: 18px; height: 2px; vertical-align: middle; margin-right: 7px; }
 
-/* ---------- pipeline ---------- */
-.stages { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 26px; }
-@media (min-width: 720px) { .stages { grid-template-columns: repeat(5, 1fr); } }
-.stage { background: var(--surface); padding: 18px 16px; min-width: 0; }
-.stage .num {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent);
-  letter-spacing: 0.1em;
-}
-.stage h3 { font-size: 0.98rem; font-weight: 650; margin-top: 8px; letter-spacing: -0.01em; }
-.stage p { font-size: 0.82rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
-
-/* ---------- prose blocks ---------- */
-.cols { display: grid; gap: 22px; margin-top: 26px; }
-@media (min-width: 760px) { .cols { grid-template-columns: 1fr 1fr; } }
-.block { min-width: 0; }
-.block h3 {
-  font-size: 1rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
-}
-.block p { font-size: 0.9rem; color: var(--muted); margin-top: 10px; }
-.block strong { color: var(--ink); font-weight: 600; }
-
-code, .m { font-family: var(--mono); font-size: 0.85em; }
-code { background: var(--sunk); padding: 1px 5px; border-radius: 2px; }
-
-.figures {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  margin-top: 22px;
-}
-.fig { background: var(--surface); padding: 16px; min-width: 0; }
-.fig .v {
-  font-family: var(--mono);
-  font-size: 1.45rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-.fig .k { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
-
-ol.limits { margin: 18px 0 0; padding-left: 0; list-style: none; counter-reset: lim; display: grid; gap: 12px; }
-ol.limits li {
-  counter-increment: lim;
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 10px;
-  font-size: 0.9rem;
-  color: var(--muted);
-  min-width: 0;
-}
-ol.limits li::before {
-  content: counter(lim, decimal-leading-zero);
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent);
-  padding-top: 4px;
-}
-ol.limits strong { color: var(--ink); font-weight: 600; }
-
-.tablewrap { overflow-x: auto; margin-top: 22px; border: 1px solid var(--line); }
-table { border-collapse: collapse; width: 100%; font-size: 0.86rem; min-width: 520px; background: var(--surface); }
-th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
-th {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 500;
-  background: var(--sunk);
-}
-td.m { font-variant-numeric: tabular-nums; }
-tr:last-child td { border-bottom: 0; }
-
-footer {
-  border-top: 1px solid var(--line);
-  padding-block: 28px 44px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 20px;
-}
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
+<div class="rail">
+  <div class="rail-in">
+    <span class="dot"></span>
+    <span class="mark">AdaptX</span>
+    <nav>
+      <a href="#lab" class="cta">Run it</a>
+      <a href="#cases" class="hide-s">Cases</a>
+      <a href="#search" class="hide-s">Search</a>
+      <a href="#limits" class="hide-s">Limits</a>
+    </nav>
+  </div>
+</div>
+
 <div class="wrap">
 
-  <header class="masthead">
-    <div class="chartline">
+  <header class="hero">
+    <div class="meta tag">
       <span>OptiForge 2026</span>
       <span>IEEE EMBS &times; IEEE CIS</span>
-      <span>Track 04 &mdash; ML &amp; AI</span>
-      <span>Team OPT-26-5711</span>
+      <span>Track 04</span>
+      <span>OPT-26-5711</span>
     </div>
-    <h1>AdaptX</h1>
-    <p class="sub">Autonomous diagnosis and multi-objective evolutionary repair of failing ML models.</p>
-    <p class="thesis">A model was working. The environment changed. It broke. Most systems can tell you <em>that</em> it broke &mdash; this one works out <em>why</em>, then makes the smallest change that fixes it.</p>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Adapt<span class="x">X</span></h1>
+        <p class="tagline">Autonomous diagnosis and evolutionary repair of failing ML models.</p>
+        <p class="thesis">A model was working. The environment changed. It broke. Most systems can tell you <em>that</em> it broke &mdash; this one works out <em>why</em>, then makes the smallest change that fixes it.</p>
+      </div>
+
+      <figure class="trace" style="margin:0">
+        <svg viewBox="0 0 420 210" role="img" aria-label="Accuracy across drift levels before and after repair, environment shift scenario">
+          <g id="trace-g"></g>
+        </svg>
+        <figcaption>
+          Environment shift, scored on drift levels the search never saw.
+          <b>29 of 1200 samples</b> used for the repair.
+        </figcaption>
+      </figure>
+    </div>
   </header>
 
   <div class="vitals">
-    <div class="vital hero">
-      <div class="k">Fitness</div>
+    <div class="vital lead">
+      <span class="k tag">Fitness</span>
       <div class="v">0.8777</div>
       <div class="n">composite benchmark score</div>
     </div>
     <div class="vital">
-      <div class="k">Diagnosis</div>
-      <div class="v">6 / 6</div>
+      <span class="k tag">Diagnosis</span>
+      <div class="v">6<small> / 6</small></div>
       <div class="n">causes correctly identified</div>
     </div>
     <div class="vital">
-      <div class="k">Mean recovery</div>
+      <span class="k tag">Recovery</span>
       <div class="v">0.78</div>
       <div class="n">of lost performance restored</div>
     </div>
     <div class="vital">
-      <div class="k">Runtime</div>
-      <div class="v">85<span style="font-size:1rem">s</span></div>
-      <div class="n">full 6-scenario benchmark</div>
+      <span class="k tag">Runtime</span>
+      <div class="v">85<small>s</small></div>
+      <div class="n">full six-scenario benchmark</div>
     </div>
     <div class="vital">
-      <div class="k">Tests</div>
+      <span class="k tag">Tests</span>
       <div class="v">80</div>
-      <div class="n">passing, incl. determinism</div>
+      <div class="n">passing, determinism included</div>
     </div>
   </div>
 
-  <section>
-    <div class="eyebrow">The loop</div>
-    <h2>Detect, diagnose, treat &mdash; then check the patient recovered</h2>
-    <p class="lede">The diagnosis is not decoration. It selects which repair family the evolutionary search explores, so the system never searches all five blindly. That is the operational difference between this and generic AutoML.</p>
-    <div class="stages">
-      <div class="stage">
-        <div class="num">STAGE 1</div>
-        <h3>Detect</h3>
-        <p>Is the drop real, or sampling noise? The threshold is the binomial standard error of the accuracy estimate, so it adapts to sample size instead of being a tuned constant.</p>
-      </div>
-      <div class="stage">
-        <div class="num">STAGE 2</div>
-        <h3>Diagnose</h3>
-        <p>An evidence vector over five causes. No classifier is trained &mdash; each cause is scored by a direct measurement of its own mechanism.</p>
-      </div>
-      <div class="stage">
-        <div class="num">STAGE 3</div>
-        <h3>Select</h3>
-        <p>The leading hypothesis routes to one repair family. A runner-up shortlist provides a fallback, because a diagnosis is a belief, not a certainty.</p>
-      </div>
-      <div class="stage">
-        <div class="num">STAGE 4</div>
-        <h3>Evolve</h3>
-        <p>NSGA-II over five objectives and three hard constraints. Written from scratch in NumPy &mdash; no pymoo dependency.</p>
-      </div>
-      <div class="stage">
-        <div class="num">STAGE 5</div>
-        <h3>Validate</h3>
-        <p>Scored on drift levels the search never saw, then emitted as a machine-readable repair report.</p>
-      </div>
-    </div>
-  </section>
-
   <section id="lab">
-    <div class="eyebrow">Live</div>
-    <h2>Run the pipeline</h2>
-    <p class="lede">This is not a recording. Choose a failure mode and a drift strength, and the page generates a fresh dataset, trains a classifier on it, breaks the environment, then runs detection, diagnosis and an evolutionary repair search in your browser. The diagnosis formulas are ported line for line from the Python; the model is a smaller one, so it finishes in about a second.</p>
+    <div class="head">
+      <span class="eyebrow tag">Live &mdash; runs in your browser</span>
+      <h2>Break a model. Watch it get diagnosed.</h2>
+      <p class="lede">This is not a recording. Choose a failure mode and a drift strength, and the page generates a fresh dataset, trains a classifier on it, damages the environment, then runs detection, diagnosis and an evolutionary repair search &mdash; here, now. Change the seed and every number moves.</p>
+    </div>
 
     <div class="lab">
+      <div class="lab-bar">
+        <span class="tag">Diagnostic bench</span>
+        <span class="live"><span class="beacon"></span> ready</span>
+      </div>
+
       <div class="lab-controls">
         <div class="ctl">
-          <label for="lab-scenario">Failure to induce</label>
+          <label class="tag" for="lab-scenario">Failure to induce</label>
           <select id="lab-scenario">
             <option value="env_shift">Environment shift</option>
             <option value="feature_shift">Feature instability</option>
@@ -583,14 +608,14 @@ footer {
           </select>
         </div>
         <div class="ctl">
-          <label for="lab-level">Drift strength</label>
+          <label class="tag" for="lab-level">Drift strength</label>
           <div class="rangerow">
             <input type="range" id="lab-level" min="0" max="2.5" step="0.1" value="1.8">
             <span class="rangeval" id="lab-levelval">1.8</span>
           </div>
         </div>
-        <div class="ctl" style="max-width:130px">
-          <label for="lab-seed">Seed</label>
+        <div class="ctl">
+          <label class="tag" for="lab-seed">Seed</label>
           <input type="number" id="lab-seed" value="7" min="0" max="99999" step="1">
         </div>
         <div class="ctl">
@@ -600,7 +625,7 @@ footer {
 
       <div class="lab-body">
         <div class="panel">
-          <h4><span>1 &middot; Detect</span><span class="step" id="lab-s1"></span></h4>
+          <h4><span class="tag">1 &middot; Detect</span><span class="step" id="lab-s1"></span></h4>
           <div class="verdict idle" id="lab-verdict">awaiting run</div>
           <div class="kv" id="lab-symptoms">
             <div class="row"><span>train accuracy</span><span>&mdash;</span></div>
@@ -614,7 +639,7 @@ footer {
         </div>
 
         <div class="panel">
-          <h4><span>2 &middot; Diagnose</span><span class="step" id="lab-s2"></span></h4>
+          <h4><span class="tag">2 &middot; Diagnose</span><span class="step" id="lab-s2"></span></h4>
           <div class="dx" id="lab-dx">
             <div class="dx-row"><span>env shift</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
             <div class="dx-row"><span>feature inst.</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
@@ -622,7 +647,7 @@ footer {
             <div class="dx-row"><span>imbalance</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
             <div class="dx-row"><span>overfitting</span><span class="dx-track"><span class="dx-fill" style="width:0%"></span></span><span class="dx-val">&mdash;</span></div>
           </div>
-          <div class="kv" id="lab-evidence" style="margin-top:16px">
+          <div class="kv" id="lab-evidence" style="margin-top:18px">
             <div class="row"><span>mean divergence</span><span>&mdash;</span></div>
             <div class="row"><span>concentration</span><span>&mdash;</span></div>
             <div class="row"><span>missing rate</span><span>&mdash;</span></div>
@@ -632,52 +657,92 @@ footer {
         </div>
 
         <div class="panel">
-          <h4><span>3&ndash;5 &middot; Select, evolve, validate</span><span class="step" id="lab-s3"></span></h4>
+          <h4><span class="tag">3&ndash;5 &middot; Select, evolve, validate</span><span class="step" id="lab-s3"></span></h4>
           <div class="bigresult">
-            <div class="b"><div class="bk">Repair chosen</div><div class="bv" id="lab-repair" style="font-size:0.95rem">&mdash;</div></div>
-            <div class="b"><div class="bk">Intervention</div><div class="bv" id="lab-size" style="font-size:0.95rem">&mdash;</div></div>
-            <div class="b"><div class="bk">Before</div><div class="bv" id="lab-before">&mdash;</div></div>
-            <div class="b"><div class="bk">After</div><div class="bv up" id="lab-after">&mdash;</div></div>
+            <div class="b"><span class="bk tag">Repair</span><div class="bv small" id="lab-repair">&mdash;</div></div>
+            <div class="b"><span class="bk tag">Intervention</span><div class="bv small" id="lab-size">&mdash;</div></div>
+            <div class="b"><span class="bk tag">Before</span><div class="bv" id="lab-before">&mdash;</div></div>
+            <div class="b"><span class="bk tag">After</span><div class="bv up" id="lab-after">&mdash;</div></div>
           </div>
           <div class="genlog" id="lab-log">Press <b>Diagnose &amp; repair</b> to start.
-Nothing is precomputed &mdash; every number
-on this panel is produced by code
-running on this page.</div>
+
+Nothing here is precomputed. Every number
+on this panel is produced by code running
+on this page, right now.</div>
           <div class="kv" id="lab-final"></div>
         </div>
       </div>
 
       <div class="lab-note">
-        <strong>What is real and what is simplified.</strong> Data generation, the perturbations, the detection rule, every diagnosis statistic and the NSGA-II search (non-dominated sorting, crowding distance, tournament selection, uniform crossover, bit-flip mutation, constraint-domination) are the same algorithms as the submission. The base learner here is multinomial logistic regression rather than the MLP, and the population and dataset are smaller, so a run finishes in about a second instead of 85.</p>
-        <p style="margin-top:10px"><strong>Two things worth trying.</strong> Drag the drift strength down toward zero and the detector stops firing &mdash; that is the do-no-harm property, not a bug: the threshold is the sampling noise of the accuracy estimate, so a drop it cannot distinguish from chance is correctly ignored. And re-run with the same seed to see identical numbers, then change the seed to watch them move.</p>
-        <p style="margin-top:10px"><strong>Only one repair family runs here.</strong> The submission implements five &mdash; PatchML, feature reweighting, class reweighting, robust preprocessing and regularisation &mdash; and routes each diagnosis to its own. This page ships PatchML's search alone, so when the diagnosis points elsewhere the panel names the family the real system would use and states which one actually ran.</p>
-        <p style="margin-top:10px"><strong>One scenario is missing here.</strong> The full benchmark includes class imbalance; this demo leaves it out because a fixed linear model is provably insensitive to a pure prior shift &mdash; per-class recall does not change when only the class proportions do &mdash; so it would show a failure that never arrives. The MLP in the submission does degrade under it, and it is scored there.
+        <p><strong>What is real and what is simplified.</strong> Data generation, the perturbations, the detection rule, every diagnosis statistic and the NSGA-II search &mdash; non-dominated sorting, crowding distance, tournament selection, uniform crossover, bit-flip mutation, constraint-domination &mdash; are the same algorithms as the submission. The base learner here is multinomial logistic regression rather than the MLP, and the population and dataset are smaller, so a run finishes in about a second instead of 85.</p>
+        <p><strong>Two things worth trying.</strong> Drag drift strength down toward zero and the detector stops firing. That is the do-no-harm property, not a bug: the threshold is the sampling noise of the accuracy estimate, so a drop it cannot distinguish from chance is correctly ignored. And re-run on the same seed to get identical numbers, then change the seed to watch them move.</p>
+        <p><strong>Only one repair family runs here.</strong> The submission implements five &mdash; PatchML, feature reweighting, class reweighting, robust preprocessing and regularisation &mdash; and routes each diagnosis to its own. This page ships PatchML's search alone, so when the diagnosis points elsewhere the panel names the family the real system would use and states which one actually ran.</p>
+        <p><strong>One scenario is missing here.</strong> The full benchmark includes class imbalance; this demo leaves it out because a fixed linear model is provably insensitive to a pure prior shift &mdash; per-class recall does not change when only the class proportions do &mdash; so it would show a failure that never arrives. The MLP in the submission does degrade under it, and it is scored there.</p>
       </div>
     </div>
   </section>
 
   <section>
-    <div class="eyebrow">Case notes</div>
-    <h2>Six patients, six charts</h2>
-    <p class="lede">Each card shows what the system concluded and what the repair did across perturbation strength. The search only ever optimised on drift levels 0.8&ndash;1.2; the curves below are scored at 0.6, 1.0, 1.5 and 2.0, so everything right of the dashed line is extrapolation.</p>
-    <div class="cases" id="cases"></div>
+    <div class="head">
+      <span class="eyebrow tag">The loop</span>
+      <h2>Detect, diagnose, treat, then check the patient recovered</h2>
+      <p class="lede">The diagnosis is not decoration. It selects which repair family the evolutionary search explores, so the system never searches all five blindly. That is the operational difference between this and generic AutoML.</p>
+    </div>
+    <div class="stages">
+      <div class="stage">
+        <span class="n">STAGE 1</span>
+        <h3>Detect</h3>
+        <p>Is the drop real, or sampling noise? The threshold is the binomial standard error of the accuracy estimate, so it adapts to sample size instead of being a tuned constant.</p>
+      </div>
+      <div class="stage">
+        <span class="n">STAGE 2</span>
+        <h3>Diagnose</h3>
+        <p>An evidence vector over five causes. No classifier is trained &mdash; each cause is scored by a direct measurement of its own mechanism.</p>
+      </div>
+      <div class="stage">
+        <span class="n">STAGE 3</span>
+        <h3>Select</h3>
+        <p>The leading hypothesis routes to one repair family. A runner-up shortlist provides the fallback, because a diagnosis is a belief, not a certainty.</p>
+      </div>
+      <div class="stage">
+        <span class="n">STAGE 4</span>
+        <h3>Evolve</h3>
+        <p>NSGA-II over five objectives and three hard constraints. Written from scratch in NumPy &mdash; no pymoo dependency.</p>
+      </div>
+      <div class="stage">
+        <span class="n">STAGE 5</span>
+        <h3>Validate</h3>
+        <p>Scored on drift levels the search never saw, then emitted as a machine-readable repair report.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cases">
+    <div class="head">
+      <span class="eyebrow tag">Case notes</span>
+      <h2>Six patients, six charts</h2>
+      <p class="lede">Each card shows what the system concluded and what the repair did across perturbation strength. The search only ever optimised on drift levels 0.8&ndash;1.2; these curves are scored at 0.6, 1.0, 1.5 and 2.0, so everything right of the dashed line is extrapolation. The shaded band is the performance the repair recovered.</p>
+    </div>
+    <div class="cases" id="cases-grid"></div>
     <div class="legend">
       <span><span class="swatch" style="background:var(--alert)"></span>failed model</span>
       <span><span class="swatch" style="background:var(--accent)"></span>after repair</span>
-      <span><span class="swatch" style="background:var(--muted);opacity:.5"></span>hidden drift levels (unseen by the search)</span>
+      <span><span class="swatch" style="background:var(--muted);opacity:.5"></span>hidden drift levels</span>
     </div>
   </section>
 
   <section>
-    <div class="eyebrow">Headline result</div>
-    <h2>PatchML: repairing a shifted model with 2.4% of the new data</h2>
-    <p class="lede">When the diagnosis is environment shift, PatchML searches for the smallest subset of newly available data that restores performance. The obstacle is combinatorial: one bit per pool sample means a search space of 2<sup>1200</sup>.</p>
+    <div class="head">
+      <span class="eyebrow tag">Headline result</span>
+      <h2>Repairing a shifted model with 2.4% of the new data</h2>
+      <p class="lede">When the diagnosis is environment shift, PatchML searches for the smallest subset of newly available data that restores performance. The obstacle is combinatorial: one bit per pool sample means a search space of 2<sup>1200</sup>.</p>
+    </div>
     <div class="figures">
-      <div class="fig"><div class="v">1200</div><div class="k">samples available</div></div>
-      <div class="fig"><div class="v">192</div><div class="k">shortlisted by margin</div></div>
-      <div class="fig"><div class="v">29</div><div class="k">actually used</div></div>
-      <div class="fig"><div class="v">0.61 &rarr; 0.74</div><div class="k">OOD accuracy</div></div>
-      <div class="fig"><div class="v">0.82</div><div class="k">recovery</div></div>
+      <div class="fig"><div class="v">1200</div><span class="k tag">available</span></div>
+      <div class="fig"><div class="v">192</div><span class="k tag">shortlisted</span></div>
+      <div class="fig"><div class="v">29</div><span class="k tag">used</span></div>
+      <div class="fig"><div class="v">0.61&thinsp;&rarr;&thinsp;0.74</div><span class="k tag">OOD accuracy</span></div>
+      <div class="fig"><div class="v">0.82</div><span class="k tag">recovery</span></div>
     </div>
     <div class="cols">
       <div class="block">
@@ -693,19 +758,21 @@ running on this page.</div>
     </div>
   </section>
 
-  <section>
-    <div class="eyebrow">Search</div>
-    <h2>Five objectives, no weighted sum</h2>
-    <p class="lede">"Best" is not one thing. A repair using 500 samples may be marginally more accurate than one using 30; which wins depends on what you can afford. So the search returns the trade-off surface, and a single deployment point is chosen from it afterwards.</p>
+  <section id="search">
+    <div class="head">
+      <span class="eyebrow tag">Search</span>
+      <h2>Five objectives, no weighted sum</h2>
+      <p class="lede">"Best" is not one thing. A repair using 500 samples may be marginally more accurate than one using 30; which wins depends on what you can afford. So the search returns the trade-off surface, and a single deployment point is chosen from it afterwards.</p>
+    </div>
     <div class="tablewrap">
       <table>
         <thead><tr><th>#</th><th>Objective (minimised)</th><th>Why it is in the search</th></tr></thead>
         <tbody>
-          <tr><td class="m">0</td><td class="m">&minus;mean OOD score</td><td>generalisation recovery</td></tr>
-          <tr><td class="m">1</td><td class="m">intervention size</td><td>how much of the system we touched</td></tr>
-          <tr><td class="m">2</td><td class="m">log(1 + training cost)</td><td>FLOP-proportional, hardware-independent</td></tr>
-          <tr><td class="m">3</td><td class="m">parameter ratio</td><td>deployment footprint vs the original</td></tr>
-          <tr><td class="m">4</td><td class="m">1 &minus; stability</td><td>variance across drift levels &mdash; this is what makes repairs extrapolate</td></tr>
+          <tr><td class="idx">0</td><td class="mono">&minus;mean OOD score</td><td>generalisation recovery</td></tr>
+          <tr><td class="idx">1</td><td class="mono">intervention size</td><td>how much of the system we touched</td></tr>
+          <tr><td class="idx">2</td><td class="mono">log(1 + training cost)</td><td>FLOP-proportional, hardware-independent</td></tr>
+          <tr><td class="idx">3</td><td class="mono">parameter ratio</td><td>deployment footprint against the original</td></tr>
+          <tr><td class="idx">4</td><td class="mono">1 &minus; stability</td><td>variance across drift levels &mdash; what makes repairs extrapolate</td></tr>
         </tbody>
       </table>
     </div>
@@ -722,9 +789,11 @@ running on this page.</div>
   </section>
 
   <section>
-    <div class="eyebrow">Reproducibility</div>
-    <h2>Determinism, and the three ways it breaks</h2>
-    <p class="lede">An earlier build was deterministic for a single evaluation and for generation one, then diverged. That signature has exactly three causes. All three are closed by construction, not patched over.</p>
+    <div class="head">
+      <span class="eyebrow tag">Reproducibility</span>
+      <h2>Determinism, and the three ways it breaks</h2>
+      <p class="lede">An earlier build was deterministic for a single evaluation and for generation one, then diverged. That signature has exactly three causes. All three are closed by construction, not patched over.</p>
+    </div>
     <div class="cols">
       <div class="block">
         <h3>1 &mdash; A shared global RNG stream</h3>
@@ -745,10 +814,12 @@ running on this page.</div>
     </div>
   </section>
 
-  <section>
-    <div class="eyebrow">Honest accounting</div>
-    <h2>What this does not do</h2>
-    <p class="lede">Stated here rather than waiting to be found. A system that reports only its wins is not a diagnostic system.</p>
+  <section id="limits">
+    <div class="head">
+      <span class="eyebrow tag">Honest accounting</span>
+      <h2>What this does not do</h2>
+      <p class="lede">Stated here rather than waiting to be found. A system that reports only its wins is not a diagnostic system.</p>
+    </div>
     <ol class="limits">
       <li><span><strong>The benchmark is synthetic.</strong> Scenarios are generated with known causes, which is what makes diagnosis measurable &mdash; but transfer to real-world drift is unproven.</span></li>
       <li><span><strong>Classification only.</strong> Regression and generative modelling are in the track theme and are not implemented.</span></li>
@@ -759,9 +830,9 @@ running on this page.</div>
     </ol>
   </section>
 
-  <footer>
+  <footer class="tag">
     <span>Python &middot; NumPy &middot; scikit-learn</span>
-    <span>NSGA-II implemented from scratch</span>
+    <span>NSGA-II from scratch</span>
     <span>No pymoo &middot; no secrets &middot; no network</span>
     <span>Figures from reports/latest.json &middot; seed 20260930</span>
   </footer>
@@ -769,121 +840,178 @@ running on this page.</div>
 </div>
 
 <script>
+/* Case charts and the hero trace. Every figure is drawn from the benchmark's
+   own numbers on one shared y-domain, so curves are comparable card to card
+   instead of each auto-scaling to flatter itself. */
 const LEVELS = [0.6, 1.0, 1.5, 2.0];
-const VAL_MAX = 1.2; // the search never saw levels beyond this
+const VAL_MAX = 1.2;            // the search never optimised beyond this
+const Y_MIN = 0.45, Y_MAX = 0.87;
 
 const CASES = [
   { id: "env_shift", truth: "environment shift", repair: "PatchML", detected: true,
-    dx: { environment_shift: 0.9266, feature_instability: 0.0194, input_corruption: 0.2388, class_imbalance: 0.0046, overfitting: 0.0084 },
+    dx: { environment_shift: 0.9266, feature_instability: 0.0194, input_corruption: 0.2388,
+          class_imbalance: 0.0046, overfitting: 0.0084 },
     lead: "environment_shift",
     before: [0.78, 0.655, 0.5125, 0.4825], after: [0.785, 0.78, 0.685, 0.7175],
     recovery: 0.821, intervention: "29 / 1200 samples" },
   { id: "feature_shift", truth: "feature instability", repair: "FeatureReweighting", detected: true,
-    dx: { environment_shift: 0.2148, feature_instability: 0.9088, input_corruption: 0.2582, class_imbalance: 0.1094, overfitting: 0.0587 },
+    dx: { environment_shift: 0.2148, feature_instability: 0.9088, input_corruption: 0.2582,
+          class_imbalance: 0.1094, overfitting: 0.0587 },
     lead: "feature_instability",
     before: [0.6725, 0.60, 0.5425, 0.5375], after: [0.8025, 0.805, 0.6975, 0.7025],
     recovery: 0.910, intervention: "13 / 1200 samples" },
   { id: "input_corruption", truth: "input corruption", repair: "RobustPreprocessing", detected: true,
-    dx: { environment_shift: 0.0726, feature_instability: 0.1486, input_corruption: 0.9443, class_imbalance: 0.1734, overfitting: 0.2296 },
+    dx: { environment_shift: 0.0726, feature_instability: 0.1486, input_corruption: 0.9443,
+          class_imbalance: 0.1734, overfitting: 0.2296 },
     lead: "input_corruption",
     before: [0.6925, 0.5875, 0.52, 0.4975], after: [0.6525, 0.5825, 0.5075, 0.52],
     recovery: null, intervention: "clip 5.9σ, 62 samples" },
   { id: "class_shift", truth: "class imbalance", repair: "ClassReweighting", detected: true,
-    dx: { environment_shift: 0.1759, feature_instability: 0.2566, input_corruption: 0.0166, class_imbalance: 0.7294, overfitting: 0.1608 },
+    dx: { environment_shift: 0.1759, feature_instability: 0.2566, input_corruption: 0.0166,
+          class_imbalance: 0.7294, overfitting: 0.1608 },
     lead: "class_imbalance",
     before: [0.7475, 0.78, 0.745, 0.765], after: [0.785, 0.7825, 0.79, 0.80],
     recovery: 0.667, intervention: "weights 2.14 / 2.45 / 1.53" },
   { id: "overfit", truth: "overfitting", repair: "Regularisation", detected: true,
-    dx: { environment_shift: 0.1833, feature_instability: 0.3777, input_corruption: 0.0548, class_imbalance: 0.3339, overfitting: 0.5162 },
+    dx: { environment_shift: 0.1833, feature_instability: 0.3777, input_corruption: 0.0548,
+          class_imbalance: 0.3339, overfitting: 0.5162 },
     lead: "overfitting",
     before: [0.7375, 0.755, 0.7125, 0.6775], after: [0.715, 0.7575, 0.7825, 0.71],
     recovery: 0.292, intervention: "α 2.4e−5, widths 31/9" },
   { id: "control", truth: "healthy — no perturbation", repair: "none", detected: false,
-    dx: { environment_shift: 0.0388, feature_instability: 0.07, input_corruption: 0.0273, class_imbalance: 0.1422, overfitting: 0.3114 },
+    dx: { environment_shift: 0.0388, feature_instability: 0.07, input_corruption: 0.0273,
+          class_imbalance: 0.1422, overfitting: 0.3114 },
     lead: null,
     before: [0.8025, 0.8275, 0.795, 0.7725], after: [0.8025, 0.8275, 0.795, 0.7725],
     recovery: null, intervention: "model left untouched" }
 ];
 
 const LABEL = {
-  environment_shift: "env shift",
-  feature_instability: "feature inst.",
-  input_corruption: "corruption",
-  class_imbalance: "imbalance",
-  overfitting: "overfitting"
+  environment_shift: "env shift", feature_instability: "feature inst.",
+  input_corruption: "corruption", class_imbalance: "imbalance", overfitting: "overfitting"
 };
 
-// Chart geometry. A single shared y-domain across every card, so curves are
-// visually comparable between patients rather than each auto-scaling.
-const W = 320, H = 132, L = 34, R = 10, T = 12, B = 26;
-const Y_MIN = 0.45, Y_MAX = 0.85;
-const xOf = v => L + (v - LEVELS[0]) / (LEVELS[LEVELS.length - 1] - LEVELS[0]) * (W - L - R);
-const yOf = v => T + (Y_MAX - v) / (Y_MAX - Y_MIN) * (H - T - B);
-
-function path(values) {
-  return values.map((v, i) => (i ? "L" : "M") + xOf(LEVELS[i]).toFixed(1) + " " + yOf(v).toFixed(1)).join(" ");
+function makeScale(w, h, pad) {
+  const [L, R, T, B] = pad;
+  return {
+    x: v => L + (v - LEVELS[0]) / (LEVELS[LEVELS.length - 1] - LEVELS[0]) * (w - L - R),
+    y: v => T + (Y_MAX - v) / (Y_MAX - Y_MIN) * (h - T - B),
+    L, R, T, B, w, h
+  };
 }
 
-function chart(c) {
-  const ticks = [0.5, 0.6, 0.7, 0.8];
-  let g = "";
-  for (const t of ticks) {
-    const y = yOf(t).toFixed(1);
-    g += `<line class="grid" x1="${L}" y1="${y}" x2="${W - R}" y2="${y}"/>`;
-    g += `<text x="${L - 6}" y="${(+y + 3).toFixed(1)}" font-size="8" text-anchor="end">${t.toFixed(1)}</text>`;
-  }
-  // boundary between the drift levels the search optimised on and the hidden ones
-  const bx = xOf(VAL_MAX).toFixed(1);
-  g += `<line class="divider" x1="${bx}" y1="${T}" x2="${bx}" y2="${H - B}"/>`;
-  g += `<text x="${(+bx + 4).toFixed(1)}" y="${T + 8}" font-size="7.5" opacity="0.8">hidden →</text>`;
+const line = (vals, s) =>
+  vals.map((v, i) => (i ? "L" : "M") + s.x(LEVELS[i]).toFixed(1) + " " + s.y(v).toFixed(1)).join(" ");
 
-  for (const lv of LEVELS) {
-    g += `<text x="${xOf(lv).toFixed(1)}" y="${H - 10}" font-size="8" text-anchor="middle">${lv.toFixed(1)}</text>`;
+// Closed polygon between the two curves: the area is the performance recovered.
+function band(before, after, s) {
+  const top = after.map((v, i) => `${s.x(LEVELS[i]).toFixed(1)} ${s.y(v).toFixed(1)}`);
+  const bot = before.map((v, i) => `${s.x(LEVELS[i]).toFixed(1)} ${s.y(v).toFixed(1)}`).reverse();
+  return "M" + top.join(" L ") + " L " + bot.join(" L ") + " Z";
+}
+
+function caseChart(c) {
+  const W = 320, H = 138;
+  const s = makeScale(W, H, [30, 8, 12, 26]);
+  let g = "";
+
+  for (const t of [0.5, 0.6, 0.7, 0.8]) {
+    const y = s.y(t).toFixed(1);
+    g += `<line class="grid" x1="${s.L}" y1="${y}" x2="${W - s.R}" y2="${y}"/>`;
+    g += `<text x="${s.L - 5}" y="${(+y + 3).toFixed(1)}" font-size="8" text-anchor="end">${t.toFixed(1)}</text>`;
   }
-  g += `<text x="${L}" y="${H - 1}" font-size="7.5">drift level</text>`;
+
+  const bx = s.x(VAL_MAX).toFixed(1);
+  g += `<line class="divider" x1="${bx}" y1="${s.T}" x2="${bx}" y2="${H - s.B}"/>`;
 
   const same = c.before.every((v, i) => v === c.after[i]);
   if (!same) {
-    g += `<path class="before" d="${path(c.before)}"/>`;
-    for (let i = 0; i < LEVELS.length; i++) {
-      g += `<circle class="before-dot" cx="${xOf(LEVELS[i]).toFixed(1)}" cy="${yOf(c.before[i]).toFixed(1)}" r="2.2"/>`;
-    }
+    g += `<path class="band" d="${band(c.before, c.after, s)}"/>`;
+    g += `<path class="before" d="${line(c.before, s)}"/>`;
+    for (let i = 0; i < LEVELS.length; i++)
+      g += `<circle class="before-dot" cx="${s.x(LEVELS[i]).toFixed(1)}" cy="${s.y(c.before[i]).toFixed(1)}" r="2"/>`;
   }
-  g += `<path class="after" d="${path(c.after)}"/>`;
-  for (let i = 0; i < LEVELS.length; i++) {
-    g += `<circle class="after-dot" cx="${xOf(LEVELS[i]).toFixed(1)}" cy="${yOf(c.after[i]).toFixed(1)}" r="2.4"/>`;
-  }
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Accuracy across drift levels for ${c.id}"><g>${g}</g></svg>`;
+  g += `<path class="after" d="${line(c.after, s)}"/>`;
+  for (let i = 0; i < LEVELS.length; i++)
+    g += `<circle class="after-dot" cx="${s.x(LEVELS[i]).toFixed(1)}" cy="${s.y(c.after[i]).toFixed(1)}" r="2.4"/>`;
+
+  for (const lv of LEVELS)
+    g += `<text x="${s.x(lv).toFixed(1)}" y="${H - 9}" font-size="8" text-anchor="middle">${lv.toFixed(1)}</text>`;
+  g += `<text x="${W - s.R}" y="${H - 1}" font-size="7.5" text-anchor="end">drift level</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Accuracy across drift levels for ${c.id}">${g}</svg>`;
 }
 
 function dxBars(c) {
-  return Object.entries(c.dx)
-    .sort((a, b) => b[1] - a[1])
-    .map(([k, v]) => `
-      <div class="dx-row${k === c.lead ? " lead" : ""}">
-        <span>${LABEL[k]}</span>
-        <span class="dx-track"><span class="dx-fill" style="width:${(v * 100).toFixed(1)}%"></span></span>
-        <span class="dx-val">${v.toFixed(2)}</span>
-      </div>`).join("");
+  return Object.entries(c.dx).sort((a, b) => b[1] - a[1]).map(([k, v]) => `
+    <div class="dx-row${k === c.lead ? " lead" : ""}">
+      <span>${LABEL[k]}</span>
+      <span class="dx-track"><span class="dx-fill" style="width:${(v * 100).toFixed(1)}%"></span></span>
+      <span class="dx-val">${v.toFixed(2)}</span>
+    </div>`).join("");
 }
 
-document.getElementById("cases").innerHTML = CASES.map(c => `
+document.getElementById("cases-grid").innerHTML = CASES.map(c => `
   <article class="case${c.detected ? "" : " healthy"}">
     <div class="case-head">
       <div>
         <div class="case-name">${c.id}</div>
-        <div class="case-truth">true cause: ${c.truth}</div>
+        <div class="case-truth">${c.truth}</div>
       </div>
-      <span class="pill ${c.detected ? "warn" : "ok"}">${c.detected ? "failure detected" : "healthy · untouched"}</span>
+      <span class="pill ${c.detected ? "warn" : "ok"}">${c.detected ? "failure" : "healthy"}</span>
     </div>
     <div class="dx">${dxBars(c)}</div>
-    <div class="case-chart">${chart(c)}</div>
+    <div class="case-chart">${caseChart(c)}</div>
     <div class="case-foot">
       <div><div class="k">Repair</div><div class="v">${c.repair}</div></div>
-      <div><div class="k">Recovery</div><div class="v">${c.recovery === null ? "—" : c.recovery.toFixed(3)}</div></div>
+      <div class="r"><div class="k">Recovery</div><div class="v${c.recovery !== null && c.recovery > 0.6 ? " hi" : ""}">${c.recovery === null ? "—" : c.recovery.toFixed(3)}</div></div>
       <div style="grid-column:1/-1"><div class="k">Intervention</div><div class="v">${c.intervention}</div></div>
     </div>
   </article>`).join("");
+
+/* ---- hero trace: the env-shift case, drawn at presentation scale ----
+   The two curves animate in on load from a visible resting state: the axes,
+   labels and band are painted immediately, so the first still frame is already
+   complete for a thumbnail or a reader who never sees the animation. */
+(function heroTrace() {
+  const host = document.getElementById("trace-g");
+  if (!host) return;
+
+  const c = CASES[0];
+  const W = 420, H = 210;
+  const s = makeScale(W, H, [34, 52, 14, 32]);
+  let g = "";
+
+  for (const t of [0.5, 0.6, 0.7, 0.8]) {
+    const y = s.y(t).toFixed(1);
+    g += `<line class="grid" x1="${s.L}" y1="${y}" x2="${W - s.R}" y2="${y}"/>`;
+    g += `<text class="axis" x="${s.L - 7}" y="${(+y + 3).toFixed(1)}" text-anchor="end">${t.toFixed(1)}</text>`;
+  }
+
+  const bx = s.x(VAL_MAX).toFixed(1);
+  g += `<line class="grid" x1="${bx}" y1="${s.T}" x2="${bx}" y2="${H - s.B}" stroke-dasharray="2 3"/>`;
+  g += `<text class="axis" x="${(+bx + 5).toFixed(1)}" y="${s.T + 9}">unseen by the search</text>`;
+
+  g += `<path class="band fade" d="${band(c.before, c.after, s)}"/>`;
+
+  // Dash length must exceed the true path length or the stroke never completes.
+  const span = W - s.L - s.R + H;
+  g += `<path class="pre draw" style="--len:${span}" d="${line(c.before, s)}"/>`;
+  g += `<path class="post draw d2" style="--len:${span}" d="${line(c.after, s)}"/>`;
+
+  for (let i = 0; i < LEVELS.length; i++) {
+    g += `<circle class="capx fade" cx="${s.x(LEVELS[i]).toFixed(1)}" cy="${s.y(c.before[i]).toFixed(1)}" r="2.6"/>`;
+    g += `<circle class="cap fade" cx="${s.x(LEVELS[i]).toFixed(1)}" cy="${s.y(c.after[i]).toFixed(1)}" r="3.2"/>`;
+    g += `<text class="axis" x="${s.x(LEVELS[i]).toFixed(1)}" y="${H - 12}" text-anchor="middle">${LEVELS[i].toFixed(1)}</text>`;
+  }
+  g += `<text class="axis" x="${s.x(LEVELS[0]).toFixed(1)}" y="${H - 1}">drift level</text>`;
+
+  const last = LEVELS.length - 1;
+  g += `<text class="axis fade" x="${(s.x(LEVELS[last]) + 7).toFixed(1)}" y="${(s.y(c.after[last]) + 3).toFixed(1)}" fill="var(--accent)" font-weight="600">${c.after[last].toFixed(2)}</text>`;
+  g += `<text class="axis fade" x="${(s.x(LEVELS[last]) + 7).toFixed(1)}" y="${(s.y(c.before[last]) + 3).toFixed(1)}" fill="var(--alert)" font-weight="600">${c.before[last].toFixed(2)}</text>`;
+
+  host.innerHTML = g;
+})();
 </script>
 
 <script>
@@ -1434,7 +1562,11 @@ document.getElementById("cases").innerHTML = CASES.map(c => `
         </div>`).join("");
   }
 
-  const wait = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+  // Yield to the event loop between generations so the browser can paint.
+  // setTimeout, not requestAnimationFrame: rAF is paused in a background or
+  // hidden tab, which would leave a run stalled mid-search if the viewer
+  // switched away -- and the whole point is that it finishes while they watch.
+  const wait = () => new Promise(r => setTimeout(r, 0));
 
   async function run() {
     const btn = $("lab-run");

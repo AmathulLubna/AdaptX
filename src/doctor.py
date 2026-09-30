@@ -27,9 +27,11 @@ from .diagnose import Diagnosis, diagnose
 from .metrics import mean_over_levels, ood_recovery, prediction_stability
 from .models import FittedModel, train_model
 from .nsga2 import Result, minimize
-from .repairs import (FAMILIES, RepairCandidate, RepairContext, decode_final,
-                      finalise, select_family)
+from .repairs import (FAMILIES, N_OBJECTIVES, RepairCandidate, RepairContext,
+                      decode_final, finalise, select_family)
 from .scenarios import Scenario
+from .validation import (summarise_failure, validate_array, validate_labels,
+                         validate_matched_lengths)
 
 # Deployment preference over the five objectives. Recovery dominates; the rest
 # break ties toward the cheaper, smaller, steadier repair. These weights affect
@@ -147,6 +149,31 @@ def run_search(family_name: str, context: RepairContext,
     return best, result
 
 
+def _search_with_recovery(family_name: str, context: RepairContext,
+                          cfg: Config) -> "Tuple[RepairCandidate | None, Result]":
+    """Run one repair family, degrading gracefully if the search itself fails.
+
+    ERROR RECOVERY. A repair family can fail for reasons that are data-dependent
+    and not programmer error: a degenerate patch that leaves a class unseen, a
+    singular covariance, an optimiser that cannot converge on corrupted input.
+    Those must not abort the whole benchmark, because the remaining scenarios
+    are still diagnosable and the fallback family may well succeed.
+
+    The failure is caught, summarised into the trace so a degraded run still
+    records WHAT went wrong, and reported as "no candidate" so the caller can
+    try the runner-up hypothesis. Programmer errors are deliberately NOT caught:
+    only `Exception` subclasses raised during the search are, and a
+    `KeyboardInterrupt` or `SystemExit` still propagates.
+    """
+    try:
+        return run_search(family_name, context, cfg)
+    except Exception as exc:  # noqa: BLE001 - deliberate recovery boundary
+        empty = Result(np.empty((0, 1)), np.empty((0, N_OBJECTIVES)),
+                       np.empty((0, 1)), np.empty(0, dtype=np.int64),
+                       [{"error": summarise_failure(exc, f"search:{family_name}")}], 0)
+        return None, empty
+
+
 def diagnose_and_repair(scenario: Scenario, cfg: Config) -> CaseResult:
     """Run the full closed loop on one scenario.
 
@@ -154,6 +181,14 @@ def diagnose_and_repair(scenario: Scenario, cfg: Config) -> CaseResult:
     before detection has fired, and nothing about the family is decided before
     the evidence vector exists.
     """
+    # Validate before spending a single model fit. A shape error found here
+    # names the offending split; found later it surfaces inside scikit-learn
+    # with no indication of which input was wrong.
+    validate_array(scenario.train.X, f"{scenario.name}.train.X", ndim=2, min_rows=2)
+    validate_labels(scenario.train.y, f"{scenario.name}.train.y", cfg.data.n_classes)
+    validate_matched_lengths(train_X=scenario.train.X, train_y=scenario.train.y)
+    validate_matched_lengths(pool_X=scenario.pool.X, pool_y=scenario.pool.y)
+
     base = train_deployed_model(scenario, cfg)
     detection = detect_failure(base, scenario, cfg)
     diagnosis = diagnose(scenario.train, scenario.pool, detection, cfg)
@@ -176,7 +211,7 @@ def diagnose_and_repair(scenario: Scenario, cfg: Config) -> CaseResult:
                             seed=cfg.seed)
 
     primary, shortlist = select_family(diagnosis.confidences, cfg)
-    best, result = run_search(primary, context, cfg)
+    best, result = _search_with_recovery(primary, context, cfg)
 
     # Fallback: if the leading hypothesis yields nothing feasible, try the next
     # one. A diagnosis is a belief, so the system must survive being wrong.
@@ -185,7 +220,7 @@ def diagnose_and_repair(scenario: Scenario, cfg: Config) -> CaseResult:
         if best is not None:
             break
         considered.append(alternative)
-        best, result = run_search(alternative, context, cfg)
+        best, result = _search_with_recovery(alternative, context, cfg)
         primary = alternative
 
     if best is None:

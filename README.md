@@ -11,12 +11,50 @@ Autonomous diagnosis and multi-objective evolutionary **repair** of failing ML m
 
 ---
 
+## 0. UN SDG alignment — SDG 3: Good Health and Well-Being
+
+**Targets 3.4** (reduce premature mortality from non-communicable diseases) and
+**3.8** (universal health coverage).
+
+Clinical ML models fail silently. A sepsis-risk or triage model trained at one
+hospital degrades when deployed at another — different sensors, different case
+mix, different population — and the failure surfaces as worse patient outcomes
+long before anyone retrains it. The barrier is not detection alone but **repair
+cost**: retraining needs newly labelled clinical data, and expert annotation is
+the scarcest resource in the system.
+
+AdaptX addresses both halves:
+
+| Algorithm output | Clinical consequence |
+|---|---|
+| Diagnosis evidence vector (`diagnose.py`) | Says *why* the model degraded — sensor drift vs case-mix change vs data-quality failure — so the fix targets the real cause instead of triggering a blind retrain. |
+| PatchML minimal repair set (`repairs.py`) | **29 of 1200 samples** in our benchmark: a 97.6% reduction in what must be expertly labelled. That is the difference between a model being repaired and abandoned. |
+| Fairness constraint (`objectives_and_constraints`) | A repair **cannot** be accepted if it widens the accuracy gap between sub-populations beyond the cap — target 3.8 expressed as a hard constraint, not a report. |
+| Calibration in detection (`detect.py`) | A confidently wrong clinical model is more dangerous than an uncertain one, so expected calibration error is a first-class detection signal. |
+| Repair report (`report.py`) | An auditable record of what changed and why — a precondition for any clinical deployment review. |
+
+**Stated plainly:** the benchmark is synthetic and no clinical claim is made or
+implied. What is demonstrated is the mechanism, on data whose ground-truth
+failure cause is known so diagnostic accuracy can actually be measured.
+
+
+---
+
 ## Quick start
 
 ```bash
 pip install -r requirements.txt
-python main.py
+python main.py                  # full benchmark, writes reports/latest.json
+python -m pytest                # 80-test suite
+python submission.py --test     # 58 self-tests, no pytest required
 ```
+
+**Two entrypoints, one source of truth.** `main.py` runs the modular package in
+`src/`. `submission.py` is that same package flattened into one self-contained
+file by `tools/build_submission.py`, because the evaluation portal executes a
+single file — it carries the validation suite inside it and produces
+byte-identical results. Regenerate it with `python tools/build_submission.py`
+after any change to `src/`.
 
 Writes `reports/latest.json` and prints the final fitness score plus convergence logs.
 

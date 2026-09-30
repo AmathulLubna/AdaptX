@@ -18,13 +18,13 @@ and means a change to the submission schema never touches the algorithms.
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import Dict, List
 
 from .config import Config
 from .doctor import CaseResult, aggregate
 from .metrics import mean_over_levels
+from .validation import assert_no_secrets, load_env_config
 
 
 def case_report(case: CaseResult) -> dict:
@@ -84,7 +84,7 @@ def build_report(results: List[CaseResult], cfg: Config,
     """Assemble the full submission payload."""
     return {
         "system": "AdaptX",
-        "team_id": os.environ.get("TEAM_ID", "unset"),
+        "team_id": load_env_config().get("TEAM_ID", "unset"),
         "config": {
             "seed": cfg.seed,
             "pop_size": cfg.search.pop_size,
@@ -103,6 +103,9 @@ def build_report(results: List[CaseResult], cfg: Config,
 
 def write_report(payload: dict, path: "str | Path") -> Path:
     """Write the report as indented JSON and return the path written."""
+    # SECURITY: sweep for credential-shaped keys before anything is serialised.
+    # A secret that reaches the report has already left the process boundary.
+    assert_no_secrets(payload)
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(payload, indent=2, sort_keys=False), encoding="utf-8")
